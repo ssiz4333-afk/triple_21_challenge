@@ -1731,24 +1731,31 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       if(go){
         go.addEventListener('click', function(){
           var ev = window.__bipEvent;
-          if(!ev || !ev.prompt){ toast('브라우저 메뉴에서 직접 추가해 주세요'); return; }
+          if(!ev || typeof ev.prompt !== 'function'){ toast('브라우저 메뉴에서 직접 추가해 주세요'); return; }
           go.disabled = true;
           go.textContent = '설치 창을 여는 중…';
-          ev.prompt();
-          ev.userChoice.then(function(choice){
-            window.__bipEvent = null;
-            if(choice && choice.outcome === 'accepted'){
-              toast('설치를 시작했어요. 바탕화면을 확인해 주세요!');
-              closeSheet();
-            } else {
-              go.disabled = false;
-              go.textContent = '지금 바로 설치하기';
-              toast('아래 안내대로 직접 추가할 수도 있어요');
-            }
-          }).catch(function(){
+          function restore(){
+            if(!document.body.contains(go)) return;
             go.disabled = false;
             go.textContent = '지금 바로 설치하기';
-          });
+          }
+          var watchdog = setTimeout(restore, 1800); /* 설치 창이 뜨지 않는 브라우저에서도 버튼이 멈추지 않게 */
+          try { ev.prompt(); } catch(e){ clearTimeout(watchdog); restore(); return; }
+          if(ev.userChoice && typeof ev.userChoice.then === 'function'){
+            ev.userChoice.then(function(choice){
+              clearTimeout(watchdog);
+              if(choice && choice.outcome === 'accepted'){
+                window.__bipEvent = null;
+                toast('설치를 시작했어요. 바탕화면을 확인해 주세요!');
+                closeSheet();
+              } else {
+                restore();
+                toast('아래 안내대로 직접 추가할 수도 있어요');
+              }
+            }).catch(function(){ clearTimeout(watchdog); restore(); });
+          } else {
+            restore();
+          }
         });
       }
     });
