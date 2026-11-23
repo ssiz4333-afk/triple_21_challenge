@@ -408,8 +408,8 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       <div class="info-banner">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.6v.2"/></svg>
         <div>
-          <strong>지금은 내 기기 저장(체험판) 모드예요</strong>
-          <p>현재는 내 기기 저장(체험판) 모드입니다. 여러 회원이 실시간으로 인증샷을 공유하려면 무료 서버(Supabase) 연동이 필요합니다.</p>
+          <strong id="feedBannerTitle">지금은 내 기기 저장(체험판) 모드예요</strong>
+          <p id="feedBannerText">현재는 내 기기 저장(체험판) 모드입니다. 여러 회원이 실시간으로 인증샷을 공유하려면 무료 서버(Supabase) 연동이 필요합니다.</p>
           <button class="link-btn" id="btnServerInfo">연동 방법 보기</button>
         </div>
       </div>
@@ -445,6 +445,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
 <div class="confetti" id="confetti" aria-hidden="true"></div>
 <noscript><div style="padding:20px;font-family:sans-serif">이 앱은 JavaScript가 필요합니다. 브라우저에서 JavaScript를 켜 주세요.</div></noscript>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 (function(){
   'use strict';
@@ -523,6 +524,230 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
   }
   function delPhoto(key){
     try{ localStorage.removeItem(PHOTO_PREFIX + key); }catch(e){}
+  }
+
+  /* ================= 클라우드 (Supabase 실시간 공유 서버) ================= */
+  var CLOUD = {
+    url: 'https://lfphrvtbpomajgzglbya.supabase.co',
+    anon: 'sb_publishable_HVPlKES6Mut6Xw8nqsVoWA_fXCG1SyX',
+    bucket: 'shots'
+  };
+  var USER_KEY_STORE = 'triple21.userkey.v1';
+  var currentTab = 'today';
+
+  var Cloud = (function(){
+    var client = null;
+    var ready = false;
+    var items = [];
+    var reacts = {};
+    var reloadTimer = null;
+    var pushTimers = {};
+    var subscribed = false;
+
+    function init(){
+      try{
+        if(!CLOUD.url || !CLOUD.anon || !window.supabase || !window.supabase.createClient) return false;
+        client = window.supabase.createClient(CLOUD.url, CLOUD.anon, {
+          auth: {persistSession: false, autoRefreshToken: false, detectSessionInUrl: false}
+        });
+        ready = true;
+      }catch(e){ ready = false; }
+      return ready;
+    }
+
+    function isReady(){ return ready; }
+    function feedItems(){ return items; }
+    function reactInfo(id){ return reacts[id] || {h:0, c:0, mh:false, mc:false}; }
+
+    function userKey(){
+      try{
+        var k = localStorage.getItem(USER_KEY_STORE);
+        if(!k){
+          k = 'u' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+          localStorage.setItem(USER_KEY_STORE, k);
+        }
+        return k;
+      }catch(e){ return 'ulocal'; }
+    }
+
+    function nick(){
+      var n = (state.nickname || '').trim();
+      return n || '익명';
+    }
+
+    function dataUrlToBlob(dataUrl){
+      var parts = String(dataUrl).split(',');
+      var mime = (parts[0].match(/:(.*?);/) || [null, 'image/jpeg'])[1];
+      var bin = atob(parts[1] || '');
+      var arr = new Uint8Array(bin.length);
+      for(var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+      return new Blob([arr], {type: mime});
+    }
+
+    /* 사진은 공개 버킷 shots 의 public/<내키>/ 폴더에 jpg 로 올린다 */
+    function uploadPhoto(key, dataUrl){
+      var path = 'public/' + userKey() + '/' + key + '-' + Date.now() + '.jpg';
+      var blob = dataUrlToBlob(dataUrl);
+      return client.storage.from(CLOUD.bucket).upload(path, blob, {contentType: 'image/jpeg', upsert: true})
+        .then(function(res){
+          if(res.error) throw res.error;
+          var pub = client.storage.from(CLOUD.bucket).getPublicUrl(path);
+          return (pub && pub.data) ? pub.data.publicUrl : null;
+        });
+    }
+
+    function pushCheckin(key, opts){
+      if(!ready) return Promise.resolve(false);
+      opts = opts || {};
+      var rec = state.days[key];
+      if(!rec) return Promise.resolve(false);
+      var n = dayNum(key);
+      if(n < 1 || n > TOTAL) return Promise.resolve(false);
+      var photoJob = Promise.resolve(undefined);
+      if(opts.photoDataUrl) photoJob = uploadPhoto(key, opts.photoDataUrl);
+      else if(opts.removePhoto) photoJob = Promise.resolve(null);
+      return photoJob.then(function(url){
+        var row = {
+          user_key: userKey(),
+          nickname: nick(),
+          day_no: n,
+          date_str: key,
+          xeo: !!rec.x,
+          lemon: !!rec.l,
+          postime: !!rec.p,
+          memo: rec.memo || '',
+          updated_at: new Date().toISOString()
+        };
+        if(url !== undefined) row.photo_url = url;
+        return client.from('checkins').upsert(row, {onConflict: 'user_key,day_no'});
+      }).then(function(res){
+        if(res && res.error) throw res.error;
+        scheduleReload(300);
+        return true;
+      }).catch(function(e){
+        console.warn('[triple21] 인증 저장 실패', e);
+        return false;
+      });
+    }
+
+    function pushSoon(key){
+      clearTimeout(pushTimers[key]);
+      pushTimers[key] = setTimeout(function(){ pushCheckin(key); }, 900);
+    }
+
+    function pushAll(){
+      var chain = Promise.resolve();
+      Object.keys(state.days || {}).forEach(function(k){
+        chain = chain.then(function(){ return pushCheckin(k); });
+      });
+      return chain;
+    }
+
+    function syncProfile(){
+      if(!ready) return Promise.resolve(false);
+      return client.from('checkins').update({nickname: nick()}).eq('user_key', userKey())
+        .then(function(res){ if(res.error) throw res.error; scheduleReload(300); return true; })
+        .catch(function(){ return false; });
+    }
+
+    function load(){
+      if(!ready) return Promise.resolve(false);
+      return client.from('checkins').select('*')
+        .order('date_str', {ascending: false})
+        .order('created_at', {ascending: false})
+        .limit(400)
+        .then(function(res){
+          if(res.error) throw res.error;
+          items = res.data || [];
+          return client.from('reactions').select('checkin_id,reactor_key,kind').limit(5000);
+        })
+        .then(function(res){
+          if(res.error) throw res.error;
+          var map = {}, me = userKey();
+          (res.data || []).forEach(function(r){
+            var m = map[r.checkin_id] || (map[r.checkin_id] = {h:0, c:0, mh:false, mc:false});
+            if(r.kind === 'heart'){ m.h++; if(r.reactor_key === me) m.mh = true; }
+            else if(r.kind === 'clap'){ m.c++; if(r.reactor_key === me) m.mc = true; }
+          });
+          reacts = map;
+          if(currentTab === 'feed') renderFeed();
+          return true;
+        })
+        .catch(function(e){
+          console.warn('[triple21] 피드 불러오기 실패', e);
+          if(currentTab === 'feed') renderFeed();
+          return false;
+        });
+    }
+
+    function toggleReaction(checkinId, kind){
+      if(!ready) return Promise.resolve(false);
+      var mine = reactInfo(checkinId);
+      var on = (kind === 'heart') ? mine.mh : mine.mc;
+      var job;
+      if(on){
+        job = client.from('reactions').delete().match({checkin_id: checkinId, reactor_key: userKey(), kind: kind});
+      } else {
+        job = client.from('reactions').insert({checkin_id: checkinId, reactor_key: userKey(), kind: kind});
+      }
+      return job.then(function(res){
+        if(res.error) throw res.error;
+        return load();
+      }).then(function(){ return true; }).catch(function(e){
+        console.warn('[triple21] 응원 저장 실패', e);
+        return false;
+      });
+    }
+
+    function scheduleReload(ms){
+      clearTimeout(reloadTimer);
+      reloadTimer = setTimeout(function(){ load(); }, ms || 500);
+    }
+
+    function subscribe(){
+      if(!ready || subscribed) return;
+      try{
+        client.channel('triple21-feed')
+          .on('postgres_changes', {event: '*', schema: 'public', table: 'checkins'}, function(){ scheduleReload(400); })
+          .on('postgres_changes', {event: '*', schema: 'public', table: 'reactions'}, function(){ scheduleReload(400); })
+          .subscribe();
+        subscribed = true;
+      }catch(e){}
+    }
+
+    function start(){
+      if(!init()) return false;
+      load();
+      subscribe();
+      setInterval(function(){
+        if(document.visibilityState !== 'hidden') load();
+      }, 60000);
+      document.addEventListener('visibilitychange', function(){
+        if(document.visibilityState === 'visible') load();
+      });
+      return true;
+    }
+
+    return {
+      start: start,
+      isReady: isReady,
+      userKey: userKey,
+      feedItems: feedItems,
+      reactInfo: reactInfo,
+      load: load,
+      pushCheckin: pushCheckin,
+      pushSoon: pushSoon,
+      pushAll: pushAll,
+      syncProfile: syncProfile,
+      toggleReaction: toggleReaction
+    };
+  })();
+
+  function applyCloudUI(){
+    var t = $('#feedBannerTitle'), p = $('#feedBannerText'), b = $('#btnServerInfo');
+    if(t) t.textContent = '회원들과 실시간으로 공유 중이에요';
+    if(p) p.textContent = '인증 기록과 인증샷이 서버에 저장되어, 모든 회원이 함께 보고 응원할 수 있습니다. 새 인증샷은 자동으로 나타납니다.';
+    if(b) b.hidden = true;
   }
 
   /* ================= 날짜 ================= */
@@ -1059,7 +1284,47 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     return state.react[id];
   }
 
+  function renderFeedCloud(){
+    var box = $('#feed');
+    var list = Cloud.feedItems();
+    var me = Cloud.userKey();
+    var html = '';
+
+    if(!list.length){
+      html += '<div class="feed-empty">아직 올라온 인증샷이 없어요.<br>오늘 체크를 저장하면 모든 회원에게 바로 보입니다 🌿</div>';
+    }
+
+    list.forEach(function(it){
+      var rs = Cloud.reactInfo(it.id);
+      var name = it.nickname || '익명';
+      var done = !!(it.xeo && it.lemon && it.postime);
+      var mine = (it.user_key === me);
+      html += '<article class="post" data-id="' + esc(it.id) + '" data-cloud="1">' +
+        '<div class="post-head">' +
+          '<div class="post-avatar">' + esc(Array.from(name)[0] || '🌿') + '</div>' +
+          '<div class="post-meta">' +
+            '<div class="post-name">' + esc(name) + (mine ? ' <span class="badge-ex">나</span>' : '') + '</div>' +
+            '<div class="post-sub">' + esc(fmtKo(it.date_str)) + ' · ' + (done ? '트리플 루틴 완료' : '인증 기록') + '</div>' +
+          '</div>' +
+          '<div class="post-day">Day ' + esc(it.day_no) + '</div>' +
+        '</div>' +
+        (it.photo_url
+          ? '<div class="post-media" data-lightbox="' + esc(it.photo_url) + '"><img src="' + esc(it.photo_url) + '" alt="' + esc(name) + ' Day ' + esc(it.day_no) + ' 인증샷" loading="lazy"></div>'
+          : '<div class="post-media"><div class="post-art" style="background:linear-gradient(140deg,#B9EBD8,#0FAE85)"><span>🌿</span></div></div>') +
+        (it.memo ? '<p class="post-memo">' + esc(it.memo) + '</p>' : '') +
+        '<div class="post-actions">' +
+          '<button class="react" data-react="h" aria-pressed="' + (rs.mh ? 'true' : 'false') + '">❤️ <span>' + rs.h + '</span></button>' +
+          '<button class="react" data-react="c" aria-pressed="' + (rs.mc ? 'true' : 'false') + '">👏 <span>' + rs.c + '</span></button>' +
+          (mine ? '<button class="share-mini" data-share="' + esc(it.date_str) + '">카톡 공유</button>' : '') +
+        '</div>' +
+      '</article>';
+    });
+
+    box.innerHTML = html;
+  }
+
   function renderFeed(){
+    if(Cloud.isReady()){ renderFeedCloud(); return; }
     var box = $('#feed');
     var html = '';
     var mine = myPosts();
@@ -1128,6 +1393,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
 
   /* ================= 탭 ================= */
   function setTab(name){
+    currentTab = name;
     $$('.view').forEach(function(v){ v.classList.toggle('active', v.id === 'view-' + name); });
     $$('.tab').forEach(function(t){
       var on = t.getAttribute('data-tab') === name;
@@ -1277,6 +1543,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
           rec.x = st.x; rec.l = st.l; rec.p = st.p;
           rec.memo = (($('#dayMemo', card).value || '').trim()).slice(0, 120);
           var photoFailed = false;
+          var cloudPhoto = edit.draft, cloudRemove = edit.remove;
           if(edit.draft){
             if(setPhoto(key, edit.draft)) rec.photo = true;
             else { photoFailed = true; rec.photo = !!getPhoto(key); }
@@ -1284,6 +1551,9 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
             delPhoto(key); rec.photo = false;
           }
           var metaOk = saveMeta();
+          if(!photoFailed && Cloud.isReady()){
+            Cloud.pushCheckin(key, {photoDataUrl: cloudPhoto || null, removePhoto: (!cloudPhoto && cloudRemove)});
+          }
           if(photoFailed || !metaOk){
             renderAll();
             toast(photoFailed
@@ -1323,24 +1593,30 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       '<label class="field"><span>닉네임</span><input id="setNick" maxlength="20" value="' + esc(state.nickname) + '" placeholder="예: 정종범"></label>' +
       '<label class="field"><span>챌린지 시작일</span><input id="setStart" type="date" value="' + esc(state.startDate) + '"></label>' +
       '<p class="field-hint">시작일을 바꾸면 Day 번호와 달력이 다시 계산됩니다. 날짜별 기록은 그대로 남아요.</p>' +
-      '<div class="stat-line">저장 공간 사용량 <strong id="setUsage">' + usageText() + '</strong></div>' +
+      '<div class="stat-line">저장 공간 사용량 <strong id="setUsage">' + usageText() + '</strong> · ' + (Cloud.isReady() ? '실시간 공유 중' : '내 기기 저장') + '</div>' +
       '<div class="sheet-actions"><button class="btn btn-primary" id="setSave" style="margin-top:0">저장</button></div>' +
       '<div class="sheet-row">' +
         '<button class="btn btn-ghost" id="setExport">기록 백업</button>' +
         '<button class="btn btn-ghost" id="setImport">백업 불러오기</button>' +
       '</div>' +
       '<input type="file" id="setImportFile" accept="application/json,.json" hidden>' +
+      '<p class="field-hint">※ 이미 올린 인증샷은 서버에 남아 함께 인증샷 탭에 계속 보입니다.</p>' +
       '<button class="btn btn-danger-ghost" id="setReset">모든 기록 초기화</button>' +
-      '<p class="foot">21일 트리플챌린지 · 체험판 v1.1<br>기록은 이 기기 브라우저에만 저장됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
+      '<p class="foot">21일 트리플챌린지 · v2.0 (실시간 공유)<br>기록은 내 폰에 저장되고, 인증샷은 함께 인증샷 탭에서 회원들과 실시간 공유됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
       function(card){
         $('#setSave', card).addEventListener('click', function(){
           var nick = ($('#setNick', card).value || '').trim().slice(0, 20);
           var start = $('#setStart', card).value;
           if(start && !/^\d{4}-\d{2}-\d{2}$/.test(start)){ toast('시작일을 다시 선택해 주세요'); return; }
+          var startChanged = !!(start && start !== state.startDate);
           state.nickname = nick;
           if(start) state.startDate = start;
           state.onboarded = true;
           saveMeta();
+          if(Cloud.isReady()){
+            Cloud.syncProfile();
+            if(startChanged) Cloud.pushAll(); else Cloud.pushSoon(todayKey());
+          }
           closeSheet();
           renderAll();
           toast('설정을 저장했어요');
@@ -1424,18 +1700,23 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
   }
 
   function openServerInfo(){
+    var online = Cloud.isReady();
     openSheet(
-      '<div class="sheet-head"><div class="sheet-title"><h3>여러 회원과 실시간으로 공유하려면</h3></div>' +
+      '<div class="sheet-head"><div class="sheet-title"><h3>' + (online ? '실시간 공유 상태' : '여러 회원과 실시간으로 공유하려면') + '</h3></div>' +
       '<button class="icon-btn" data-close aria-label="닫기">✕</button></div>' +
-      '<p style="margin:8px 2px 0;font-size:12.5px;line-height:1.6;color:#496158;font-weight:600">지금은 각자 폰에만 저장되는 체험판입니다. 아래 순서로 무료 서버를 붙이면 회원들이 서로의 인증샷을 실시간으로 보고 응원할 수 있어요.</p>' +
+      (online
+        ? '<p style="margin:8px 2px 0;font-size:12.5px;line-height:1.6;color:#496158;font-weight:600">지금 무료 서버(Supabase)에 연결되어 있습니다. 인증 기록과 사진이 서버에 저장되고, 다른 회원의 인증샷과 응원이 실시간으로 나타납니다. 링크만 공유하면 누구나 참여할 수 있어요.</p>' +
+          '<div class="stat-line">서버 <strong>연결됨</strong></div>' +
+          '<div class="stat-line">공유 범위 <strong>링크를 받은 모든 회원</strong></div>'
+        : '<p style="margin:8px 2px 0;font-size:12.5px;line-height:1.6;color:#496158;font-weight:600">지금은 각자 폰에만 저장되는 모드입니다. 서버 연결이 되지 않았거나 오프라인 상태예요. 인터넷 연결을 확인해 주세요.</p>') +
       '<ol class="steps">' +
-        '<li><b>Supabase 무료 프로젝트</b>를 만들고 <b>인증 기록표</b>(닉네임·Day·사진 주소·소감·응원 수)와 <b>사진 저장소(Storage)</b>를 만듭니다.</li>' +
-        '<li>이 앱의 저장 부분만 <b>Supabase 주소로 바꿔</b> 올리면, 인증샷이 모든 회원에게 바로 보입니다.</li>' +
-        '<li>무료 호스팅(GitHub Pages·Netlify)에 올려 <b>링크 하나</b>로 회원에게 배포합니다.</li>' +
-        '<li><b>카카오 개발자 앱 등록</b>(JavaScript 키·도메인 등록)을 하면 카카오톡 공유 카드와 카카오 로그인까지 붙일 수 있습니다.</li>' +
+        '<li><b>기록 저장</b> — 오늘 체크·소감·인증샷을 저장하면 서버에 함께 올라갑니다.</li>' +
+        '<li><b>함께 인증샷</b> — 링크를 받은 회원 모두의 인증샷이 최신순으로 보이고, 하트·박수로 응원할 수 있습니다.</li>' +
+        '<li><b>사진 보관</b> — 인증샷 사진은 공개 저장소(shots)에 보관되고 주소로 불러옵니다.</li>' +
+        '<li><b>카카오톡 공유</b> — 카카오 개발자 앱 등록을 하면 카톡 카드·카카오 로그인까지 붙일 수 있습니다.</li>' +
       '</ol>' +
       '<div class="sheet-actions"><button class="btn btn-primary" data-close style="margin-top:0">확인</button></div>' +
-      '<p class="foot">준비되면 말씀해 주세요. 서버 연동 버전으로 이어서 만들어 드릴 수 있어요.</p>',
+      '<p class="foot">서버: ' + esc(CLOUD.url.replace('https://', '')) + '</p>',
       null
     );
   }
@@ -1447,7 +1728,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       '<label class="field"><span>닉네임</span><input id="obNick" maxlength="20" value="' + esc(state.nickname) + '" placeholder="예: 정종범"></label>' +
       '<label class="field"><span>챌린지 시작일</span><input id="obStart" type="date" value="' + esc(state.startDate) + '"></label>' +
       '<div class="sheet-actions"><button class="btn btn-primary" id="obStartBtn" style="margin-top:0">시작하기</button></div>' +
-      '<p class="foot">나중에 설정에서 언제든 바꿀 수 있어요.<br>기록은 이 기기에만 저장됩니다.</p>',
+      '<p class="foot">나중에 설정에서 언제든 바꿀 수 있어요.<br>인증샷은 함께 인증샷 탭에서 회원들과 공유됩니다.</p>',
       function(card){
         $('#obStartBtn', card).addEventListener('click', function(){
           var nick = ($('#obNick', card).value || '').trim().slice(0, 20);
@@ -1484,6 +1765,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
         var rec = ensure(tk);
         rec[k] = !rec[k];
         saveMeta();
+        if(Cloud.isReady()) Cloud.pushSoon(tk);
         vibrate(12);
         btn.classList.toggle('just-done', !!rec[k]);
         setTimeout(function(){ btn.classList.remove('just-done'); }, 450);
@@ -1499,6 +1781,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       var rec = ensure(tk);
       rec.memo = (($('#memoInput').value || '').trim()).slice(0, 120);
       var photoFailed = false;
+      var cloudPhoto = photoEdit.draft, cloudRemove = photoEdit.remove;
       if(photoEdit.draft){
         if(setPhoto(tk, photoEdit.draft)) rec.photo = true;
         else { photoFailed = true; rec.photo = !!getPhoto(tk); }
@@ -1511,6 +1794,9 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
         return;
       }
       var metaOk = saveMeta();
+      if(!photoFailed && Cloud.isReady()){
+        Cloud.pushCheckin(tk, {photoDataUrl: cloudPhoto || null, removePhoto: (!cloudPhoto && cloudRemove)});
+      }
       renderAll();
       if(photoFailed || !metaOk){
         if(photoEdit.draft) todayPhotoBlock.set(photoEdit.draft, true);
@@ -1551,6 +1837,12 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
         var post = reactBtn.closest('.post');
         var id = post.getAttribute('data-id');
         var type = reactBtn.getAttribute('data-react');
+        if(post.getAttribute('data-cloud') === '1'){
+          Cloud.toggleReaction(id, type === 'h' ? 'heart' : 'clap').then(function(ok){
+            if(!ok) toast('응원을 저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.');
+          });
+          return;
+        }
         var rs = reactOf(id);
         if(type === 'h') rs.mh = !rs.mh; else rs.mc = !rs.mc;
         saveMeta();
@@ -1562,7 +1854,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       var media = e.target.closest('[data-lightbox]');
       if(media){
         var key = media.getAttribute('data-lightbox');
-        var photo = getPhoto(key);
+        var photo = /^https?:/i.test(key) ? key : getPhoto(key);
         if(photo){
           $('#lightboxImg').src = photo;
           $('#lightbox').hidden = false;
@@ -1626,6 +1918,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
   initTodayPhoto();
   lastComplete = complete(todayKey());
   renderAll();
+  if(Cloud.start()) applyCloudUI();
   if(!state.onboarded){ setTimeout(openOnboard, 260); }
 
 })();
