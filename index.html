@@ -588,7 +588,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     function uploadPhoto(key, dataUrl){
       var path = 'public/' + userKey() + '/' + key + '-' + Date.now() + '.jpg';
       var blob = dataUrlToBlob(dataUrl);
-      return client.storage.from(CLOUD.bucket).upload(path, blob, {contentType: 'image/jpeg', upsert: true})
+      return client.storage.from(CLOUD.bucket).upload(path, blob, {contentType: 'image/jpeg'})
         .then(function(res){
           if(res.error) throw res.error;
           var pub = client.storage.from(CLOUD.bucket).getPublicUrl(path);
