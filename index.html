@@ -630,7 +630,107 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
   }
 
   /* ================= 사진 ================= */
-  function compressImage(file){
+  var STAMP_FONT_STACK = '"Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic",-apple-system,BlinkMacSystemFont,sans-serif';
+
+  function stampTextOf(stamp){
+    var key = stamp && stamp.key;
+    if(!key || !/^\d{4}-\d{2}-\d{2}$/.test(key)) return null;
+    var d = parseKey(key);
+    if(isNaN(d.getTime())) return null;
+    var n = dayNum(key);
+    var date = d.getFullYear() + '.' + pad(d.getMonth()+1) + '.' + pad(d.getDate()) + ' (' + WEEK[d.getDay()] + ')';
+    var day = (n >= 1 && n <= TOTAL) ? ('Day ' + n) : (n < 1 ? ('D-' + (1 - n)) : '완주');
+    return {date: date, sub: day + ' · 21일 트리플챌린지'};
+  }
+
+  function stampRoundRect(ctx, x, y, w, h, r){
+    r = Math.max(0, Math.min(r, w / 2, h / 2));
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.arcTo(x + w, y, x + w, y + r, r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+    ctx.lineTo(x + r, y + h);
+    ctx.arcTo(x, y + h, x, y + h - r, r);
+    ctx.lineTo(x, y + r);
+    ctx.arcTo(x, y, x + r, y, r);
+    ctx.closePath();
+  }
+
+  function stampLeaf(ctx, cx, cy, s){
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(-Math.PI / 7);
+    ctx.beginPath();
+    ctx.moveTo(0, -s * 0.52);
+    ctx.bezierCurveTo(s * 0.46, -s * 0.30, s * 0.40, s * 0.30, 0, s * 0.52);
+    ctx.bezierCurveTo(-s * 0.40, s * 0.30, -s * 0.46, -s * 0.30, 0, -s * 0.52);
+    ctx.closePath();
+    ctx.fillStyle = '#7FE3BE';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(0, -s * 0.40);
+    ctx.lineTo(0, s * 0.46);
+    ctx.strokeStyle = 'rgba(9,26,21,.45)';
+    ctx.lineWidth = Math.max(1, s * 0.055);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawDateStamp(ctx, w, h, stamp){
+    var t = stampTextOf(stamp);
+    if(!t) return;
+    var f1 = Math.max(12, Math.round(w * 0.030));      /* 날짜 줄 */
+    var f2 = Math.max(9, Math.round(w * 0.0172));      /* Day 줄 */
+    var gap = Math.max(3, Math.round(f1 * 0.22));
+    var padX = Math.round(f1 * 0.76);
+    var padY = Math.round(f1 * 0.50);
+    var icon = Math.round(f1 * 1.02);
+    var iconGap = Math.round(f1 * 0.48);
+    ctx.save();
+    ctx.textBaseline = 'top';
+    ctx.font = '800 ' + f1 + 'px ' + STAMP_FONT_STACK;
+    var w1 = ctx.measureText(t.date).width;
+    ctx.font = '700 ' + f2 + 'px ' + STAMP_FONT_STACK;
+    var w2 = ctx.measureText(t.sub).width;
+    var textW = Math.max(w1, w2);
+    var textH = f1 + gap + f2;
+    var bw = padX * 2 + icon + iconGap + Math.ceil(textW);
+    var bh = Math.max(textH + padY * 2, icon + padY * 2);
+    var margin = Math.round(w * 0.028);
+    var x = w - margin - bw;
+    var y = h - margin - bh;
+    if(x < 2 || y < 2 || bw > w * 0.9) return; /* 너무 작은 사진에서는 생략 */
+    var radius = Math.round(bh * 0.30);
+    /* 반투명 다크 배지 + 그림자 */
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,.42)';
+    ctx.shadowBlur = Math.round(f1 * 0.8);
+    ctx.shadowOffsetY = Math.round(f1 * 0.14);
+    stampRoundRect(ctx, x, y, bw, bh, radius);
+    ctx.fillStyle = 'rgba(9,26,21,.60)';
+    ctx.fill();
+    ctx.restore();
+    stampRoundRect(ctx, x, y, bw, bh, radius);
+    ctx.strokeStyle = 'rgba(255,255,255,.24)';
+    ctx.lineWidth = Math.max(1, w * 0.0018);
+    ctx.stroke();
+    /* 작은 잎 아이콘 */
+    stampLeaf(ctx, x + padX + icon / 2, y + bh / 2, icon);
+    /* 날짜 + Day */
+    var tx = x + padX + icon + iconGap;
+    var ty = y + (bh - textH) / 2;
+    ctx.font = '800 ' + f1 + 'px ' + STAMP_FONT_STACK;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillText(t.date, tx, ty);
+    ctx.font = '700 ' + f2 + 'px ' + STAMP_FONT_STACK;
+    ctx.fillStyle = '#9BEBCE';
+    ctx.fillText(t.sub, tx, ty + f1 + gap);
+    ctx.restore();
+  }
+
+  function compressImage(file, stamp){
     return new Promise(function(resolve, reject){
       if(!file || !/^image\//.test(file.type || '')){ reject(new Error('이미지 파일이 아니에요')); return; }
       var reader = new FileReader();
@@ -651,6 +751,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, w, h);
             ctx.drawImage(img, 0, 0, w, h);
+            try{ drawDateStamp(ctx, w, h, stamp); }catch(e){ /* 스탬프가 실패해도 사진은 저장 */ }
             var out = canvas.toDataURL('image/jpeg', 0.7);
             if(out.length > 950000){ out = canvas.toDataURL('image/jpeg', 0.55); }
             resolve(out);
@@ -706,10 +807,18 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       badge.hidden = true;
       camIn.value = ''; galIn.value = '';
     }
+    function stampForPick(){
+      var s = handlers && handlers.stamp;
+      if(s === false) return null;
+      if(typeof s === 'function') s = s();
+      if(typeof s === 'string') return {key: s};
+      if(s && s.key) return {key: s.key};
+      return {key: todayKey()};
+    }
     function handleFile(input){
       var file = input.files && input.files[0];
       if(!file) return;
-      compressImage(file).then(function(url){
+      compressImage(file, stampForPick()).then(function(url){
         show(url, true);
         if(handlers && handlers.onPick) handlers.onPick(url);
       }).catch(function(err){
@@ -802,8 +911,9 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     todayPhotoBlock = createPhotoBlock(
       $('#todayPhoto'),
       getPhoto(todayKey()),
-      '사진을 추가하고 오늘의 루틴을 기록해 보세요',
+      '사진을 추가하면 날짜와 Day가 함께 찍혀요',
       {
+        stamp: function(){ return {key: todayKey()}; },
         onPick: function(url){
           photoEdit.draft = url;
           photoEdit.remove = false;
@@ -1143,8 +1253,9 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
         '<button class="btn btn-primary" id="daySave" style="margin-top:0"' + (future ? ' disabled' : '') + '>저장</button>' +
       '</div>',
       function(card){
-        createPhotoBlock($('#dayPhoto', card), photoUrl, '그날의 인증샷을 남겨 보세요', {
+        createPhotoBlock($('#dayPhoto', card), photoUrl, '사진을 고르면 그날 날짜가 함께 찍혀요', {
           disabled: future,
+          stamp: {key: key},
           onPick: function(url){ edit.draft = url; edit.remove = false; },
           onRemove: function(){ edit.draft = null; edit.remove = true; }
         });
@@ -1220,7 +1331,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       '</div>' +
       '<input type="file" id="setImportFile" accept="application/json,.json" hidden>' +
       '<button class="btn btn-danger-ghost" id="setReset">모든 기록 초기화</button>' +
-      '<p class="foot">21일 트리플챌린지 · 체험판 v1.0<br>기록은 이 기기 브라우저에만 저장됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
+      '<p class="foot">21일 트리플챌린지 · 체험판 v1.1<br>기록은 이 기기 브라우저에만 저장됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
       function(card){
         $('#setSave', card).addEventListener('click', function(){
           var nick = ($('#setNick', card).value || '').trim().slice(0, 20);
