@@ -3236,6 +3236,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
         input.disabled = false;
         if(r === 'ok'){
           cmtDrafts[id] = '';
+          input.value = '';
           renderFeed();
           var again = $('#feed').querySelector('[data-cmt-input="' + id + '"]');
           if(again){ try{ again.focus({preventScroll: true}); }catch(err){ again.focus(); } }
