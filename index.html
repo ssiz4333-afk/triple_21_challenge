@@ -981,6 +981,9 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
             var nl = !!cur.l || !!r.lemon;
             var np = !!cur.p || !!r.postime;
             var memo = (cur.memo || r.memo || '');
+            if(r.photo_url && !getPhoto(key)){
+              if(setPhoto(key, r.photo_url)){ cur.photo = true; state.days[key] = cur; changed = true; }
+            }
             if(nx !== !!cur.x || nl !== !!cur.l || np !== !!cur.p || memo !== (cur.memo || '')){
               cur.x = nx; cur.l = nl; cur.p = np; cur.memo = memo;
               state.days[key] = cur;
@@ -1073,29 +1076,62 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       return new Blob([arr], {type: mime});
     }
 
-    /* 사진은 공개 버킷 shots 의 public/<내키>/ 폴더에 jpg 로 올린다 */
-    function uploadPhoto(key, dataUrl){
-      var path = 'public/' + userKey() + '/' + key + '-' + Date.now() + '.jpg';
+    function photoErrorText(e){
+      var m = String((e && (e.message || e.error_description)) || e || '');
+      if(/row-level security|violates|Unauthorized|403/i.test(m)) return '사진 저장소 권한 오류';
+      if(/exceeded the maximum allowed size|too large|413/i.test(m)) return '사진 용량이 너무 큼';
+      if(/Failed to fetch|NetworkError|Load failed|network/i.test(m)) return '네트워크 연결 끊김';
+      return m ? m.slice(0, 80) : '알 수 없는 오류';
+    }
+
+    /* 사진은 공개 버킷 shots 의 public/<내키>/ 폴더에 jpg 로 올린다.
+       v3.1: 로그인(authenticated) 상태에서도 올라가도록 정책을 고쳤고, 일시적 실패는 한 번 더 시도한다. */
+    function uploadPhoto(key, dataUrl, attempt){
+      if(String(dataUrl).indexOf('data:') !== 0){
+        return (String(dataUrl).indexOf('http') === 0) ? Promise.resolve(dataUrl) : Promise.reject(new Error('사진 데이터가 비어 있어요'));
+      }
+      attempt = attempt || 1;
+      var path = 'public/' + userKey() + '/' + key + '-' + Date.now() + (attempt > 1 ? '-' + attempt : '') + '.jpg';
       var blob = dataUrlToBlob(dataUrl);
-      return client.storage.from(CLOUD.bucket).upload(path, blob, {contentType: 'image/jpeg'})
+      var bucket = client.storage.from(CLOUD.bucket);
+      return bucket.upload(path, blob, {contentType: 'image/jpeg', upsert: true})
         .then(function(res){
-          if(res.error) throw res.error;
-          var pub = client.storage.from(CLOUD.bucket).getPublicUrl(path);
-          return (pub && pub.data) ? pub.data.publicUrl : null;
+          if(res && res.error) throw res.error;
+          var pub = bucket.getPublicUrl(path);
+          var url = (pub && pub.data) ? pub.data.publicUrl : null;
+          if(!url) throw new Error('사진 주소를 만들지 못했어요');
+          return url;
+        })
+        .catch(function(e){
+          if(attempt < 2){
+            return new Promise(function(ok){ setTimeout(ok, 700); })
+              .then(function(){ return uploadPhoto(key, dataUrl, attempt + 1); });
+          }
+          throw e;
         });
     }
 
+    /* 결과: {ok: 기록이 서버에 올라갔는지, photoFailed: 사진만 실패했는지, error: 사유} */
     function pushCheckin(key, opts){
-      if(!ready) return Promise.resolve(false);
+      if(!ready) return Promise.resolve({ok:false, photoFailed:false, error:'offline'});
       opts = opts || {};
       var rec = state.days[key];
-      if(!rec) return Promise.resolve(false);
+      if(!rec) return Promise.resolve({ok:false, photoFailed:false, error:'no-record'});
       var n = dayNum(key);
-      if(n < 1 || n > TOTAL) return Promise.resolve(false);
+      if(n < 1 || n > TOTAL) return Promise.resolve({ok:false, photoFailed:false, error:'out-of-range'});
+      var photoError = null, savedUrl;
       var photoJob = Promise.resolve(undefined);
-      if(opts.photoDataUrl) photoJob = uploadPhoto(key, opts.photoDataUrl);
-      else if(opts.removePhoto) photoJob = Promise.resolve(null);
+      if(opts.photoDataUrl){
+        photoJob = uploadPhoto(key, opts.photoDataUrl).catch(function(e){
+          photoError = e;
+          console.warn('[triple21] 사진 업로드 실패: ' + photoErrorText(e), e);
+          return undefined; /* 사진이 실패해도 기록은 올린다 */
+        });
+      } else if(opts.removePhoto){
+        photoJob = Promise.resolve(null);
+      }
       return photoJob.then(function(url){
+        if(url) savedUrl = url;
         var row = {
           user_key: userKey(),
           nickname: nick(),
@@ -1112,10 +1148,10 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       }).then(function(res){
         if(res && res.error) throw res.error;
         scheduleReload(300);
-        return true;
+        return {ok:true, photoFailed: !!photoError, photoUrl: savedUrl || null, error: photoError ? photoErrorText(photoError) : null};
       }).catch(function(e){
         console.warn('[triple21] 인증 저장 실패', e);
-        return false;
+        return {ok:false, photoFailed: !!photoError, photoUrl: null, error: photoErrorText(e)};
       });
     }
 
@@ -1670,7 +1706,9 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
 
   function compressImage(file, stamp){
     return new Promise(function(resolve, reject){
-      if(!file || !/^image\//.test(file.type || '')){ reject(new Error('이미지 파일이 아니에요')); return; }
+      var ftype = String((file && file.type) || ''), fname = String((file && file.name) || '');
+      var looksImage = /^image\//.test(ftype) || (!ftype && /\.(jpe?g|png|webp|heic|heif|gif)$/i.test(fname));
+      if(!file || !looksImage){ reject(new Error('사진 파일이 아니에요. 갤러리에서 사진을 골라 주세요.')); return; }
       var reader = new FileReader();
       reader.onerror = function(){ reject(new Error('사진을 읽지 못했어요')); };
       reader.onload = function(){
@@ -1872,6 +1910,43 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     else if(photoEdit.remove){ el.textContent = '삭제 예정'; }
     else if(getPhoto(todayKey())){ el.textContent = '저장됨'; }
     else { el.textContent = '선택 사항'; }
+  }
+
+  /* v3.1: 사진만 서버에 못 올라간 날은 기기에 사진이 남아 있으므로 자동으로 다시 올린다 */
+  function markPhotoPending(key, on){
+    var rec = state.days[key];
+    if(!rec) return;
+    if(on) rec.pendingPhoto = true; else delete rec.pendingPhoto;
+    saveMeta();
+  }
+
+  var photoRetryTimer = null, photoRetrying = false;
+  function retryPendingPhotos(delay){
+    if(!Cloud.isReady() || photoRetrying) return Promise.resolve(false);
+    clearTimeout(photoRetryTimer);
+    return new Promise(function(ok){ photoRetryTimer = setTimeout(ok, delay || 0); }).then(function(){
+      var keys = Object.keys(state.days || {}).filter(function(k){
+        var r = state.days[k];
+        return r && r.pendingPhoto;
+      });
+      if(!keys.length) return false;
+      photoRetrying = true;
+      var chain = Promise.resolve();
+      keys.forEach(function(k){
+        chain = chain.then(function(){
+          var data = getPhoto(k);
+          if(!data || String(data).indexOf('data:') !== 0){ markPhotoPending(k, false); return; }
+          return Cloud.pushCheckin(k, {photoDataUrl: data}).then(function(r){
+            if(r && r.ok && !r.photoFailed){
+              markPhotoPending(k, false);
+              if(k === todayKey()) toast('인증샷 사진을 다시 올렸어요!');
+            }
+          });
+        });
+      });
+      return chain.then(function(){ photoRetrying = false; return true; })
+        .catch(function(){ photoRetrying = false; return false; });
+    });
   }
 
   function renderToday(){
@@ -2366,6 +2441,10 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
           rec.memo = (($('#dayMemo', card).value || '').trim()).slice(0, 120);
           var photoFailed = false;
           var cloudPhoto = edit.draft, cloudRemove = edit.remove;
+          if(!cloudPhoto && !cloudRemove && rec.pendingPhoto){
+            var pend = getPhoto(key);
+            if(pend && String(pend).indexOf('data:') === 0) cloudPhoto = pend;
+          }
           if(edit.draft){
             if(setPhoto(key, edit.draft)) rec.photo = true;
             else { photoFailed = true; rec.photo = !!getPhoto(key); }
@@ -2373,8 +2452,9 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
             delPhoto(key); rec.photo = false;
           }
           var metaOk = saveMeta();
+          var pushJob = null;
           if(!photoFailed && Cloud.isReady()){
-            Cloud.pushCheckin(key, {photoDataUrl: cloudPhoto || null, removePhoto: (!cloudPhoto && cloudRemove)});
+            pushJob = Cloud.pushCheckin(key, {photoDataUrl: cloudPhoto || null, removePhoto: (!cloudPhoto && cloudRemove)});
           }
           if(photoFailed || !metaOk){
             renderAll();
@@ -2386,7 +2466,21 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
           edit.draft = null; edit.remove = false;
           closeSheet();
           renderAll();
-          toast(fmtKo(key) + ' 기록을 저장했어요');
+          if(pushJob){
+            pushJob.then(function(r){
+              if(r && r.ok && r.photoFailed){
+                markPhotoPending(key, true);
+                toast('기록은 올라갔지만 사진은 올리지 못했어요(' + (r.error || '오류') + '). 잠시 뒤 자동으로 다시 시도합니다.');
+              } else if(r && r.ok){
+                toast(fmtKo(key) + (cloudPhoto ? ' 기록과 인증샷을 저장했어요' : ' 기록을 저장했어요'));
+              } else if(cloudPhoto){
+                markPhotoPending(key, true);
+                toast('서버에 올리지 못했어요(' + ((r && r.error) || '연결 오류') + '). 기기에는 저장했습니다.');
+              }
+            });
+          } else {
+            toast(fmtKo(key) + ' 기록을 저장했어요');
+          }
         });
       }
     );
@@ -2537,7 +2631,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       '<input type="file" id="setImportFile" accept="application/json,.json" hidden>' +
       '<p class="field-hint">※ 이미 올린 인증샷은 서버에 남아 함께 인증샷 탭에 계속 보입니다.</p>' +
       '<button class="btn btn-danger-ghost" id="setReset">모든 기록 초기화</button>' +
-      '<p class="foot">21일 트리플챌린지 · v3.0 (카카오 로그인 · 실시간 채팅 · 오일·제품 안내)<br>기록은 카카오 로그인 시 계정에, 로그인 전에는 내 폰에 저장됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
+      '<p class="foot">21일 트리플챌린지 · v3.1 (사진 업로드 수정 · 카카오 로그인 · 실시간 채팅)<br>기록은 카카오 로그인 시 계정에, 로그인 전에는 내 폰에 저장됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
       function(card){
         var kb = $('#setKakaoLogin', card);
         if(kb) kb.addEventListener('click', function(){
@@ -2738,6 +2832,10 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       rec.memo = (($('#memoInput').value || '').trim()).slice(0, 120);
       var photoFailed = false;
       var cloudPhoto = photoEdit.draft, cloudRemove = photoEdit.remove;
+      if(!cloudPhoto && !cloudRemove && rec.pendingPhoto){
+        var pend = getPhoto(tk);
+        if(pend && String(pend).indexOf('data:') === 0) cloudPhoto = pend;
+      }
       if(photoEdit.draft){
         if(setPhoto(tk, photoEdit.draft)) rec.photo = true;
         else { photoFailed = true; rec.photo = !!getPhoto(tk); }
@@ -2750,9 +2848,6 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
         return;
       }
       var metaOk = saveMeta();
-      if(!photoFailed && Cloud.isReady()){
-        Cloud.pushCheckin(tk, {photoDataUrl: cloudPhoto || null, removePhoto: (!cloudPhoto && cloudRemove)});
-      }
       renderAll();
       if(photoFailed || !metaOk){
         if(photoEdit.draft) todayPhotoBlock.set(photoEdit.draft, true);
@@ -2765,9 +2860,38 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       if(savedPhoto) todayPhotoBlock.set(savedPhoto, false);
       else todayPhotoBlock.clear();
       var btn = $('#btnSaveToday');
-      btn.textContent = '저장됨 ✓';
-      setTimeout(function(){ btn.textContent = '오늘 인증 저장'; }, 1600);
-      toast('오늘 인증을 저장했어요! 함께 인증샷에 올라갔어요.');
+      if(!Cloud.isReady()){
+        toast('오늘 인증을 기기에 저장했어요. 서버 연결 전이라 다음에 함께 인증샷에 올라갑니다.');
+        btn.textContent = '저장됨 ✓';
+        setTimeout(function(){ btn.textContent = '오늘 인증 저장'; }, 1600);
+        return;
+      }
+      /* v3.1: 서버 저장·사진 업로드 결과를 실제로 확인해서 알려준다 */
+      btn.disabled = true;
+      btn.textContent = cloudPhoto ? '사진 올리는 중…' : '올리는 중…';
+      Cloud.pushCheckin(tk, {photoDataUrl: cloudPhoto || null, removePhoto: (!cloudPhoto && cloudRemove)})
+        .then(function(r){
+          btn.disabled = false;
+          if(r && r.ok){
+            btn.textContent = '저장됨 ✓';
+            setTimeout(function(){ btn.textContent = '오늘 인증 저장'; }, 1600);
+            if(r.photoFailed){
+              markPhotoPending(tk, true);
+              toast('기록은 함께 인증샷에 올라갔지만 사진은 올리지 못했어요(' + (r.error || '오류') + '). 잠시 뒤 자동으로 다시 시도합니다.');
+            } else {
+              toast('오늘 인증을 저장했어요! 함께 인증샷에 올라갔어요.');
+            }
+          } else {
+            btn.textContent = '오늘 인증 저장';
+            markPhotoPending(tk, !!cloudPhoto);
+            toast('서버에 올리지 못했어요(' + ((r && r.error) || '연결 오류') + '). 기기에는 저장했으니 잠시 뒤 다시 저장해 주세요.');
+          }
+        })
+        .catch(function(){
+          btn.disabled = false;
+          btn.textContent = '오늘 인증 저장';
+          toast('서버에 올리지 못했어요. 기기에는 저장했으니 잠시 뒤 다시 저장해 주세요.');
+        });
     });
 
     $('#btnShare').addEventListener('click', function(){ shareDay(todayKey()); });
@@ -2882,6 +3006,10 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
   lastComplete = complete(todayKey());
   renderAll();
   if(Cloud.start()) applyCloudUI();
+  setTimeout(function(){ retryPendingPhotos(0); }, 4000);
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState === 'visible') retryPendingPhotos(1200);
+  });
   updateChatBar(currentTab);
   setTimeout(hideSplash, SPLASH_MS);
   if(!state.onboarded){ setTimeout(openOnboard, SPLASH_MS + 220); }
