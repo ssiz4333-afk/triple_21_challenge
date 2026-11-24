@@ -410,6 +410,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
 .synergy li::before{content:counter(syn);flex:0 0 auto;width:21px;height:21px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:900;background:var(--mint-soft);color:var(--mint-dark)}
 .synergy b{color:var(--ink);font-weight:800}
 .prod-foot{margin:14px 2px 0;font-size:10.5px;font-weight:600;line-height:1.6;color:var(--ink-3);text-align:center}
+.chat-intro p,.msg-bubble,.prod-hero>p,.prod-desc,.prod-feats li,.prod-use,.synergy p,.synergy li{word-break:keep-all;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -581,8 +582,8 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
           <p>오늘의 루틴 자랑, 궁금한 점, 서로에게 보내는 응원을 자유롭게 나눠 주세요. 새 메시지는 바로 나타납니다.</p>
         </div>
       </div>
+      <p class="chat-note" id="chatNote" style="text-align:left;margin:0 2px 9px">닉네임을 정하면 회원님 이름으로 대화할 수 있어요.</p>
       <div class="chat-list" id="chatList"></div>
-      <p class="chat-note" id="chatNote">닉네임을 정하면 회원님 이름으로 대화할 수 있어요.</p>
     </section>
 
     <!-- ===== 오일·제품 ===== -->
