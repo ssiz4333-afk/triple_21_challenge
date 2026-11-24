@@ -8,11 +8,19 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui", "browser"],
+  "display_override": [
+    "standalone",
+    "minimal-ui",
+    "browser"
+  ],
   "orientation": "portrait",
-  "background_color": "#f4faf7",
-  "theme_color": "#0d9488",
-  "categories": ["health", "lifestyle", "productivity"],
+  "background_color": "#ffffff",
+  "theme_color": "#124e26",
+  "categories": [
+    "health",
+    "lifestyle",
+    "productivity"
+  ],
   "icons": [
     {
       "src": "icon-192.png",
