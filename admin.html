@@ -183,6 +183,16 @@ main{padding-top:6px}
   .mrow .chev{display:none}
   .kpi-value{font-size:23px}
 }
+/* ===== 채팅 관리 ===== */
+.chatlist{display:flex;flex-direction:column;gap:8px}
+.crow{display:flex;align-items:flex-start;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:14px;background:#fff}
+.crow .cb{flex:1;min-width:0}
+.crow .cn{font-size:12.5px;font-weight:800;color:var(--ink)}
+.crow .cn i{font-style:normal;font-weight:700;color:var(--ink-3);font-size:10.5px;margin-left:5px}
+.crow .cm{margin:4px 0 0;font-size:12.5px;line-height:1.5;color:var(--ink-2);font-weight:600;word-break:break-word;white-space:pre-wrap}
+.crow .ct{font-size:10.5px;color:var(--ink-3);font-weight:700;margin-top:5px}
+.crow .cdel{flex:0 0 auto;border:1px solid #F6D3CE;background:#FFF6F5;color:#C33A2C;border-radius:10px;padding:6px 10px;font-size:11.5px;font-weight:800;cursor:pointer}
+.crow .cdel:active{transform:scale(.96)}
 </style>
 </head>
 <body>
@@ -227,6 +237,7 @@ main{padding-top:6px}
     <button type="button" data-tab="dash" class="on" role="tab">대시보드</button>
     <button type="button" data-tab="members" role="tab">회원 현황</button>
     <button type="button" data-tab="shots" role="tab">인증샷 관리</button>
+    <button type="button" data-tab="chat" role="tab">채팅 관리</button>
     <button type="button" data-tab="settings" role="tab">공지·상담 설정</button>
   </nav>
 
@@ -319,6 +330,21 @@ main{padding-top:6px}
       <p class="field-hint" style="margin:10px 2px 0">삭제는 서버에서 바로 지워지고 되돌릴 수 없습니다. 확인 창에서 한 번 더 묻습니다. (사진 파일 자체는 저장소에 남을 수 있습니다.)</p>
     </section>
 
+    <!-- ===== 채팅 ===== -->
+    <section id="tab-chat" hidden>
+      <div class="section-title"><h2>실시간 채팅 관리</h2><span id="chatAdminSub">-</span></div>
+      <div class="panel">
+        <div class="toolbar">
+          <input type="search" id="chatSearch" placeholder="닉네임·내용 검색" aria-label="채팅 검색">
+          <span class="spacer"></span>
+          <button class="btn-sm primary" id="btnChatReload" type="button">채팅 새로고침</button>
+        </div>
+        <div class="chatlist" id="chatAdminList"></div>
+        <div class="empty" id="chatAdminEmpty" hidden>아직 대화가 없습니다.</div>
+      </div>
+      <p class="field-hint" style="margin:10px 2px 0">회원 앱 <b>채팅</b> 탭에 올라온 메시지입니다(최근 300개). 삭제는 서버에서 바로 지워지고 되돌릴 수 없습니다.</p>
+    </section>
+
     <!-- ===== 설정 ===== -->
     <section id="tab-settings" hidden>
       <div class="section-title"><h2>공지사항 &amp; 상담 링크</h2><span id="settingsSub">-</span></div>
@@ -394,7 +420,7 @@ main{padding-top:6px}
   var SESSION_KEY = 'triple21.admin.session.v1';
 
   var db = null;
-  var MODEL = {rows: [], members: [], settings: null, loadedAt: null, sort: 'rate', query: ''};
+  var MODEL = {rows: [], members: [], chat: [], settings: null, loadedAt: null, sort: 'rate', query: ''};
   var liveChannel = null, reloadTimer = null, autoTimer = null;
 
   /* ============ 유틸 ============ */
@@ -579,6 +605,17 @@ main{padding-top:6px}
     return step(0);
   }
 
+  function fetchChat(){
+    return db.from('chat_messages')
+      .select('id,user_key,nickname,message,created_at')
+      .order('created_at', {ascending: false})
+      .limit(300)
+      .then(function(res){
+        if(res.error) throw res.error;
+        return res.data || [];
+      });
+  }
+
   function fetchSettings(){
     return db.from('app_settings').select('*').eq('id', 'default').limit(1)
       .then(function(res){
@@ -618,8 +655,9 @@ main{padding-top:6px}
     });
   }
 
-  function applyModel(rows, settings){
+  function applyModel(rows, settings, chat){
     MODEL.rows = rows || [];
+    if(chat) MODEL.chat = chat;
     MODEL.members = buildMembers(MODEL.rows);
     if(settings) MODEL.settings = settings;
     MODEL.loadedAt = new Date();
@@ -628,9 +666,13 @@ main{padding-top:6px}
   function loadAll(silent){
     if(!initClient()){ showErr('서버 연결 스크립트를 불러오지 못했습니다. 새로고침해 주세요.'); return Promise.resolve(false); }
     setLive('loading');
-    return Promise.all([fetchAllCheckins(), fetchSettings()])
+    return Promise.all([
+      fetchAllCheckins(),
+      fetchSettings(),
+      fetchChat().catch(function(e){ console.warn('[admin] 채팅 불러오기 실패', e); return MODEL.chat || []; })
+    ])
       .then(function(out){
-        applyModel(out[0], out[1]);
+        applyModel(out[0], out[1], out[2]);
         showErr(null);
         setLive('ok');
         renderAll();
@@ -665,6 +707,7 @@ main{padding-top:6px}
     renderDash();
     renderMembers();
     renderShots();
+    renderChatAdmin();
     renderSettings();
   }
 
@@ -941,6 +984,58 @@ main{padding-top:6px}
     });
   }
 
+  /* ============ 렌더: 채팅 ============ */
+  function renderChatAdmin(){
+    var box = $('#chatAdminList');
+    if(!box) return;
+    var q = ($('#chatSearch') && $('#chatSearch').value || '').trim().toLowerCase();
+    var list = (MODEL.chat || []).filter(function(m){
+      if(!q) return true;
+      return String(m.nickname || '').toLowerCase().indexOf(q) >= 0 ||
+             String(m.message || '').toLowerCase().indexOf(q) >= 0;
+    });
+    $('#chatAdminSub').textContent = '메시지 ' + (MODEL.chat || []).length + '개' + (q ? ' · 표시 ' + list.length + '개' : '');
+    if(!list.length){
+      box.innerHTML = '';
+      $('#chatAdminEmpty').hidden = false;
+      $('#chatAdminEmpty').textContent = q ? '검색 결과가 없습니다.' : '아직 대화가 없습니다.';
+      return;
+    }
+    $('#chatAdminEmpty').hidden = true;
+    box.innerHTML = list.map(function(m){
+      return '<div class="crow" data-cid="' + esc(m.id) + '">' +
+        '<div class="cb">' +
+          '<div class="cn">' + esc(m.nickname || '익명') + '<i>' + esc(String(m.user_key || '').slice(-4)) + '</i></div>' +
+          '<p class="cm">' + esc(m.message || '') + '</p>' +
+          '<div class="ct">' + fmtDateTime(m.created_at) + '</div>' +
+        '</div>' +
+        '<button class="cdel" type="button" data-cdel="' + esc(m.id) + '">삭제</button>' +
+      '</div>';
+    }).join('');
+    $$('#chatAdminList [data-cdel]').forEach(function(btn){
+      btn.addEventListener('click', function(){ confirmDeleteChat(btn.getAttribute('data-cdel')); });
+    });
+  }
+
+  function confirmDeleteChat(id){
+    var m = (MODEL.chat || []).filter(function(x){ return x.id === id; })[0];
+    if(!m) return;
+    confirmModal({
+      title: '이 채팅 메시지를 삭제할까요?',
+      sub: (m.nickname || '익명') + ' · ' + fmtDateTime(m.created_at),
+      body: '회원 앱 채팅방에서도 바로 사라집니다.<br>서버에서 지워지고 <b>되돌릴 수 없습니다</b>.',
+      okText: '삭제하기'
+    }).then(function(ok){
+      if(!ok) return;
+      db.from('chat_messages').delete().eq('id', id).then(function(res){
+        if(res.error){ toast('삭제 실패: ' + (res.error.message || '')); return; }
+        MODEL.chat = (MODEL.chat || []).filter(function(x){ return x.id !== id; });
+        renderChatAdmin();
+        toast('삭제했어요');
+      });
+    });
+  }
+
   /* ============ 렌더: 설정 ============ */
   function renderSettings(){
     var s = MODEL.settings || {};
@@ -1013,11 +1108,12 @@ main{padding-top:6px}
       $$('.tabs button').forEach(function(x){ x.classList.remove('on'); x.setAttribute('aria-selected', 'false'); });
       b.classList.add('on'); b.setAttribute('aria-selected', 'true');
       var tab = b.getAttribute('data-tab');
-      ['dash','members','shots','settings'].forEach(function(t){
+      ['dash','members','shots','chat','settings'].forEach(function(t){
         $('#tab-' + t).hidden = (t !== tab);
       });
       if(tab === 'settings') renderSettings();
       if(tab === 'shots') renderShots();
+      if(tab === 'chat') renderChatAdmin();
     });
   });
 
@@ -1031,6 +1127,15 @@ main{padding-top:6px}
   $('#shotSearch').addEventListener('input', function(){ MODEL.query = this.value; renderShots(); });
   $('#shotUser').addEventListener('change', renderShots);
   $('#btnPurgeUser').addEventListener('click', purgeUser);
+  $('#chatSearch').addEventListener('input', renderChatAdmin);
+  $('#btnChatReload').addEventListener('click', function(){
+    if(!initClient()){ toast('서버 연결 실패'); return; }
+    fetchChat().then(function(rows){
+      MODEL.chat = rows;
+      renderChatAdmin();
+      toast('채팅을 새로 불러왔어요');
+    }).catch(function(e){ toast('불러오기 실패: ' + (e.message || '')); });
+  });
 
   $('#btnRefresh').addEventListener('click', function(){
     var b = this; b.disabled = true; b.textContent = '불러오는 중…';
@@ -1046,6 +1151,7 @@ main{padding-top:6px}
         liveChannel = db.channel('triple21-admin')
           .on('postgres_changes', {event: '*', schema: 'public', table: 'checkins'}, function(){ scheduleReload(); })
           .on('postgres_changes', {event: '*', schema: 'public', table: 'app_settings'}, function(){ scheduleReload(); })
+          .on('postgres_changes', {event: '*', schema: 'public', table: 'chat_messages'}, function(){ scheduleReload(); })
           .subscribe();
       }catch(e){}
       clearInterval(autoTimer);
