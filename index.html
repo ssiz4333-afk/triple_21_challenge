@@ -341,12 +341,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
 .notice-banner-main{display:flex;align-items:flex-start;gap:7px;flex:1;min-width:0}
 .notice-banner-icon{font-size:13px;line-height:1.45;flex:0 0 auto}
 .notice-banner-text{margin:0;flex:1;min-width:0;word-break:keep-all;overflow-wrap:anywhere}
-.notice-banner-cta{flex:0 0 auto;background:var(--mint-dark);color:#fff;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:800;text-decoration:none;white-space:nowrap;box-shadow:0 3px 8px rgba(7,102,78,.18)}
 .notice-banner-x{flex:0 0 auto;border:none;background:transparent;color:#9A7B22;font-size:12px;line-height:1;padding:2px 3px;cursor:pointer}
-.kit-card{margin-top:14px;border-radius:18px;padding:14px 15px;background:linear-gradient(120deg,#07664E,#12B58B);color:#fff;box-shadow:0 10px 22px rgba(7,102,78,.22)}
-.kit-card strong{display:block;font-size:13.5px;font-weight:900;letter-spacing:-.2px}
-.kit-card p{margin:4px 0 10px;font-size:11.5px;color:rgba(255,255,255,.86);font-weight:600;line-height:1.5}
-.kit-cta{display:inline-flex;align-items:center;gap:6px;background:#FFE15A;color:#4A3600;border-radius:999px;padding:9px 14px;font-size:12.5px;font-weight:900;text-decoration:none}
 
 /* ---------- v2.5 · 탭 5개 ---------- */
 .tabbar{grid-template-columns:repeat(5,1fr);gap:1px;padding:6px 5px calc(6px + env(safe-area-inset-bottom))}
@@ -443,7 +438,6 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       <span class="notice-banner-icon" aria-hidden="true">📢</span>
       <p class="notice-banner-text" id="noticeBannerText"></p>
     </div>
-    <a class="notice-banner-cta" id="noticeBannerCta" href="#" target="_blank" rel="noopener noreferrer" hidden></a>
     <button class="notice-banner-x" id="noticeBannerClose" type="button" aria-label="공지 닫기">✕</button>
   </div>
 
@@ -656,8 +650,6 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
         <div class="prod-use" style="margin-top:12px;background:#fff"><b>섭취 팁</b> 물은 하루 1.5~2L, 오일은 직사광선을 피해 서늘한 곳에. 21일 동안 <b>같은 시간</b>에 체크하는 습관이 완주의 핵심입니다.</div>
       </div>
 
-      <div id="prodCta"></div>
-
       <a class="maker" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">
         <span class="maker-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.4l2.6 5.2 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8L12 3.4Z"/></svg></span>
         <span>제품 문의 <b>@erang_coach</b></span>
@@ -808,7 +800,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     var reloadTimer = null;
     var pushTimers = {};
     var subscribed = false;
-    var settings = {notice_text:'', cta_label:'', cta_url:'', cohort_name:'', updated_at:null};
+    var settings = {notice_text:'', cohort_name:'', updated_at:null};
 
     function init(){
       try{
@@ -973,20 +965,17 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     /* 관리자(admin.html)가 고친 공지·상담 문구를 받아온다 */
     function loadSettings(){
       if(!ready) return Promise.resolve(false);
-      return client.from('app_settings').select('notice_text,cta_label,cta_url,cohort_name,updated_at')
+      return client.from('app_settings').select('notice_text,cohort_name,updated_at')
         .eq('id', 'default').limit(1)
         .then(function(res){
           if(res.error) throw res.error;
           var row = (res.data || [])[0];
           if(row){
             settings.notice_text = row.notice_text || '';
-            settings.cta_label = row.cta_label || '';
-            settings.cta_url = row.cta_url || '';
             settings.cohort_name = row.cohort_name || '';
             settings.updated_at = row.updated_at || null;
           }
           renderNotice();
-          renderProductCta();
           return true;
         })
         .catch(function(e){
@@ -1149,16 +1138,10 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     if(!bar) return;
     var s = Cloud.getSettings() || {};
     var text = String(s.notice_text || '').trim();
-    var label = String(s.cta_label || '').trim();
-    var url = String(s.cta_url || '').trim();
     var dismissed = false;
     try{ dismissed = sessionStorage.getItem('triple21.notice.dismissed') === text; }catch(e){}
-    var cta = $('#noticeBannerCta');
-    var safeUrl = /^https?:\/\//.test(url) ? url : '';
     if(text && !dismissed){
       $('#noticeBannerText').textContent = text;
-      if(label && safeUrl){ cta.textContent = label; cta.href = safeUrl; cta.hidden = false; }
-      else { cta.hidden = true; }
       bar.hidden = false;
     } else {
       bar.hidden = true;
@@ -1174,18 +1157,6 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       var bar = $('#noticeBanner');
       if(bar) bar.hidden = true;
     });
-  }
-
-  function kitCardHtml(){
-    var s = Cloud.getSettings() || {};
-    var label = String(s.cta_label || '').trim();
-    var url = String(s.cta_url || '').trim();
-    if(!label || !/^https?:\/\//.test(url)) return '';
-    return '<div class="kit-card">' +
-      '<strong>트리플 키트 · 1:1 상담</strong>' +
-      '<p>이오메가·레몬·포스티엠 구성과 진행 방법이 궁금하면 편하게 물어보세요.</p>' +
-      '<a class="kit-cta" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + esc(label) + ' →</a>' +
-    '</div>';
   }
 
   function applyCloudUI(){
@@ -1930,30 +1901,6 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     }
   }
 
-  /* ================= 오일·제품 ================= */
-  function renderProductCta(){
-    var box = $('#prodCta');
-    if(!box) return;
-    var s = Cloud.getSettings() || {};
-    var label = String(s.cta_label || '').trim();
-    var url = String(s.cta_url || '').trim();
-    var html = '';
-    if(label && /^https?:\/\//.test(url)){
-      html = '<div class="kit-card">' +
-        '<strong>트리플 키트 · 구매 1:1 상담</strong>' +
-        '<p>이오 메가·레몬·포스티엠 구성과 21일 진행 방법이 궁금하면 편하게 물어보세요.</p>' +
-        '<a class="kit-cta" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + esc(label) + ' →</a>' +
-      '</div>';
-    } else {
-      html = '<div class="kit-card">' +
-        '<strong>트리플 키트 · 구매 1:1 상담</strong>' +
-        '<p>제품 구성·가격·진행 방법은 인스타그램 DM으로 편하게 문의해 주세요. 관리자 상담 링크가 열리면 여기에서 바로 연결됩니다.</p>' +
-        '<a class="kit-cta" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer">@erang_coach 상담 →</a>' +
-      '</div>';
-    }
-    box.innerHTML = html;
-  }
-
   function renderAll(){
     renderToday();
     renderCalendar();
@@ -1976,7 +1923,6 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     if(name === 'today') renderToday();
     updateChatBar(name);
     if(name === 'chat') renderChat(true);
-    if(name === 'products') renderProductCta();
   }
 
   /* ================= 카톡 공유 ================= */
@@ -2280,7 +2226,6 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       '<div class="stat-line">저장 공간 사용량 <strong id="setUsage">' + usageText() + '</strong> · ' + (Cloud.isReady() ? '실시간 공유 중' : '내 기기 저장') + '</div>' +
       '<div class="sheet-actions"><button class="btn btn-primary" id="setSave" style="margin-top:0">저장</button></div>' +
       '<button class="btn btn-ghost" id="setInstall" style="margin-top:12px">📲 바탕화면 앱으로 추가하기</button>' +
-      kitCardHtml() +
       '<div class="sheet-row">' +
         '<button class="btn btn-ghost" id="setExport">기록 백업</button>' +
         '<button class="btn btn-ghost" id="setImport">백업 불러오기</button>' +
@@ -2288,7 +2233,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       '<input type="file" id="setImportFile" accept="application/json,.json" hidden>' +
       '<p class="field-hint">※ 이미 올린 인증샷은 서버에 남아 함께 인증샷 탭에 계속 보입니다.</p>' +
       '<button class="btn btn-danger-ghost" id="setReset">모든 기록 초기화</button>' +
-      '<p class="foot">21일 트리플챌린지 · v2.5 (실시간 채팅 · 오일·제품 안내)<br>기록은 내 폰에 저장되고, 인증샷은 함께 인증샷 탭에서 회원들과 실시간 공유됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
+      '<p class="foot">21일 트리플챌린지 · v2.6 (실시간 채팅 · 오일·제품 안내)<br>기록은 내 폰에 저장되고, 인증샷은 함께 인증샷 탭에서 회원들과 실시간 공유됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
       function(card){
         $('#setSave', card).addEventListener('click', function(){
           var nick = ($('#setNick', card).value || '').trim().slice(0, 20);
@@ -2617,7 +2562,6 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
   renderAll();
   if(Cloud.start()) applyCloudUI();
   updateChatBar(currentTab);
-  renderProductCta();
   setTimeout(hideSplash, SPLASH_MS);
   if(!state.onboarded){ setTimeout(openOnboard, SPLASH_MS + 220); }
 
