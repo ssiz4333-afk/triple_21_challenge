@@ -259,6 +259,28 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
 .share-mini{margin-left:auto;border:none;background:none;color:var(--mint);font-size:11.5px;font-weight:800;padding:7px 4px}
 .feed-empty{text-align:center;padding:20px 10px 6px;color:var(--ink-3);font-size:12px;font-weight:700;line-height:1.6}
 
+/* ---------- v3.2 · 인증샷 댓글 ---------- */
+.cmt{margin-top:9px}
+.cmt-list{display:flex;flex-direction:column;gap:7px;margin:1px 2px 8px}
+.cmt-row{display:flex;gap:8px;align-items:flex-start}
+.cmt-avatar{position:relative;flex:0 0 auto;width:26px;height:26px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--mint-soft);color:var(--mint-dark);font-size:11px;font-weight:900}
+.cmt-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%}
+.cmt-body{flex:1;min-width:0;background:#F7FBF9;border:1px solid var(--line);border-radius:14px;padding:7px 10px 8px}
+.cmt-top{display:flex;align-items:baseline;gap:6px}
+.cmt-name{font-size:11.5px;font-weight:900;color:var(--ink);letter-spacing:-.1px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cmt-time{font-size:9.5px;font-weight:700;color:var(--ink-3);flex:0 0 auto}
+.cmt-del{margin-left:auto;flex:0 0 auto;border:none;background:none;color:#B8452F;font-size:10px;font-weight:800;padding:0 1px;cursor:pointer;line-height:1.4}
+.cmt-text{margin-top:2px;font-size:12.5px;line-height:1.5;color:var(--ink);word-break:break-word;white-space:pre-wrap}
+.cmt-more{align-self:flex-start;border:none;background:none;color:var(--mint-dark);font-size:11px;font-weight:800;padding:2px 2px 3px;cursor:pointer}
+.cmt-form{display:flex;gap:6px;align-items:center}
+.cmt-input{flex:1;min-width:0;border:1.5px solid var(--line);background:#F8FBF9;border-radius:13px;padding:9px 12px;font-size:15px;color:inherit;outline:none}
+.cmt-input:focus{border-color:var(--mint-2);background:#fff;box-shadow:0 0 0 3px rgba(18,181,139,.12)}
+.cmt-input::placeholder{color:#A7B8B0;font-weight:600}
+.cmt-send{flex:0 0 auto;border:none;border-radius:12px;background:linear-gradient(135deg,#0C8F6E,#14B98D);color:#fff;font-size:12px;font-weight:900;padding:10px 14px;cursor:pointer;transition:.15s;box-shadow:0 4px 10px rgba(12,143,110,.2)}
+.cmt-send:active{transform:scale(.95)}
+.cmt-send:disabled{opacity:.5;box-shadow:none}
+.react.cmt-pill[data-on="1"]{border-color:#BFE7D8;background:var(--mint-soft);color:var(--mint-dark)}
+
 /* ---------- tabbar ---------- */
 .tabbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:40;display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:7px 8px calc(7px + env(safe-area-inset-bottom));background:rgba(255,255,255,.94);backdrop-filter:saturate(160%) blur(14px);-webkit-backdrop-filter:saturate(160%) blur(14px);border-top:1px solid var(--line)}
 .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;padding:7px 2px;border-radius:14px;color:#93A79E;font-size:10.5px;font-weight:800;cursor:pointer;transition:.18s}
@@ -823,6 +845,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     var ready = false;
     var items = [];
     var reacts = {};
+    var comments = {};   /* v3.2: checkin_id -> 댓글 배열 */
     var reloadTimer = null;
     var pushTimers = {};
     var subscribed = false;
@@ -842,6 +865,113 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     function isReady(){ return ready; }
     function feedItems(){ return items; }
     function reactInfo(id){ return reacts[id] || {h:0, c:0, mh:false, mc:false}; }
+
+    /* ---------------- v3.2: 함께 인증샷 댓글 (checkin_comments) ---------------- */
+    function commentList(id){ return comments[id] || []; }
+
+    function feedHas(checkinId){
+      for(var i = 0; i < items.length; i++){ if(items[i].id === checkinId) return true; }
+      return false;
+    }
+
+    function sortComments(arr){
+      arr.sort(function(a, b){
+        var x = String(a.created_at || ''), y = String(b.created_at || '');
+        return x < y ? -1 : (x > y ? 1 : 0);
+      });
+      return arr;
+    }
+
+    /* 피드에 보이는 인증샷들의 댓글을 한 번에 받아온다(최근 1000개) */
+    function loadComments(){
+      if(!ready) return Promise.resolve(false);
+      if(!items.length){ comments = {}; return Promise.resolve(true); }
+      return client.from('checkin_comments')
+        .select('id,checkin_id,user_key,author_name,avatar_url,content,created_at')
+        .order('created_at', {ascending: false})
+        .limit(1000)
+        .then(function(res){
+          if(res.error) throw res.error;
+          var map = {};
+          (res.data || []).forEach(function(c){
+            var arr = map[c.checkin_id] || (map[c.checkin_id] = []);
+            arr.push(c);
+          });
+          Object.keys(map).forEach(function(k){ sortComments(map[k]); });
+          comments = map;
+          return true;
+        })
+        .catch(function(e){
+          console.warn('[triple21] 댓글 불러오기 실패', e);
+          return false;
+        });
+    }
+
+    /* 실시간 INSERT — 내가 쓴 댓글도 이 경로로 한 번 더 들어오므로 id로 중복을 막는다 */
+    function appendComment(row){
+      if(!row || !row.id || !row.checkin_id || !feedHas(row.checkin_id)) return;
+      var arr = comments[row.checkin_id] || (comments[row.checkin_id] = []);
+      for(var i = 0; i < arr.length; i++){
+        if(arr[i].id === row.id){
+          arr[i] = row;
+          if(currentTab === 'feed') renderFeed();
+          return;
+        }
+      }
+      arr.push(row);
+      sortComments(arr);
+      if(currentTab === 'feed') renderFeed();
+    }
+
+    /* 실시간 DELETE */
+    function dropComment(id){
+      if(!id) return;
+      Object.keys(comments).forEach(function(cid){
+        comments[cid] = (comments[cid] || []).filter(function(c){ return c.id !== id; });
+      });
+      if(currentTab === 'feed') renderFeed();
+    }
+
+    function addComment(checkinId, text){
+      var body = String(text == null ? '' : text).replace(/\s+/g, ' ').trim().slice(0, 300);
+      if(!body) return Promise.resolve('empty');
+      if(!ready) return Promise.resolve('offline');
+      var p = profile();
+      return client.from('checkin_comments')
+        .insert({
+          checkin_id: checkinId,
+          user_key: userKey(),
+          author_name: nick().slice(0, 20),
+          avatar_url: p.photo || null,
+          content: body
+        })
+        .select('id,checkin_id,user_key,author_name,avatar_url,content,created_at')
+        .single()
+        .then(function(res){
+          if(res.error) throw res.error;
+          if(res.data) appendComment(res.data);
+          return 'ok';
+        })
+        .catch(function(e){
+          console.warn('[triple21] 댓글 등록 실패', e);
+          return 'fail';
+        });
+    }
+
+    function removeComment(id){
+      if(!ready) return Promise.resolve('offline');
+      if(!id) return Promise.resolve('empty');
+      return client.from('checkin_comments').delete().eq('id', id)
+        .then(function(res){
+          if(res.error) throw res.error;
+          dropComment(id);
+          return 'ok';
+        })
+        .catch(function(e){
+          console.warn('[triple21] 댓글 삭제 실패', e);
+          return 'fail';
+        });
+    }
 
     /* 로그인 상태면 Supabase auth 사용자 id, 아니면 이 기기의 임시 키 */
     function userKey(){
@@ -1205,6 +1335,9 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
             else if(r.kind === 'clap'){ m.c++; if(r.reactor_key === me) m.mc = true; }
           });
           reacts = map;
+          return loadComments();
+        })
+        .then(function(){
           if(currentTab === 'feed') renderFeed();
           return true;
         })
@@ -1269,6 +1402,13 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
         client.channel('triple21-feed')
           .on('postgres_changes', {event: '*', schema: 'public', table: 'checkins'}, function(){ scheduleReload(400); })
           .on('postgres_changes', {event: '*', schema: 'public', table: 'reactions'}, function(){ scheduleReload(400); })
+          .on('postgres_changes', {event: 'INSERT', schema: 'public', table: 'checkin_comments'}, function(payload){
+            if(payload && payload.new) appendComment(payload.new);
+          })
+          .on('postgres_changes', {event: 'DELETE', schema: 'public', table: 'checkin_comments'}, function(payload){
+            var old = payload && payload.old;
+            if(old && old.id) dropComment(old.id);
+          })
           .on('postgres_changes', {event: '*', schema: 'public', table: 'app_settings'}, function(){ loadSettings(); })
           .subscribe();
         subscribed = true;
@@ -1401,6 +1541,9 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       toggleReaction: toggleReaction,
       loadSettings: loadSettings,
       getSettings: getSettings,
+      commentList: commentList,
+      addComment: addComment,
+      removeComment: removeComment,
       chatList: chatList,
       isChatLoading: isChatLoading,
       loadChat: loadChat,
@@ -2093,8 +2236,79 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     return state.react[id];
   }
 
+  /* v3.2: 댓글 영역 — 입력 중인 글과 펼침 상태를 다시 그려도 유지한다 */
+  var cmtDrafts = {};
+  var cmtOpenAll = {};
+
+  function cmtInitial(name){
+    var a = Array.from(String(name || '익명'));
+    return a.length ? a[0] : '🌿';
+  }
+
+  function fmtRel(iso){
+    var d = new Date(iso || Date.now());
+    if(isNaN(d.getTime())) return '';
+    var s = Math.floor((Date.now() - d.getTime()) / 1000);
+    if(s < 0) s = 0;
+    if(s < 60) return '방금';
+    if(s < 3600) return Math.floor(s / 60) + '분 전';
+    if(s < 86400) return Math.floor(s / 3600) + '시간 전';
+    if(s < 86400 * 7) return Math.floor(s / 86400) + '일 전';
+    return (d.getMonth() + 1) + '월 ' + d.getDate() + '일';
+  }
+
+  function cmtRowHtml(c){
+    var name = c.author_name || '익명';
+    var mine = (c.user_key === Cloud.userKey());
+    var av = String(c.avatar_url || '');
+    return '<div class="cmt-row" data-cmt-row="' + esc(c.id) + '">' +
+      '<span class="cmt-avatar">' + esc(cmtInitial(name)) +
+        (av ? '<img src="' + esc(av) + '" alt="" loading="lazy" onerror="this.remove()">' : '') +
+      '</span>' +
+      '<div class="cmt-body">' +
+        '<div class="cmt-top">' +
+          '<span class="cmt-name">' + esc(name) + '</span>' +
+          '<span class="cmt-time">' + esc(fmtRel(c.created_at)) + '</span>' +
+          (mine ? '<button class="cmt-del" data-cmt-del="' + esc(c.id) + '" aria-label="내 댓글 삭제">삭제</button>' : '') +
+        '</div>' +
+        '<div class="cmt-text">' + esc(c.content) + '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function cmtBlockHtml(id){
+    var list = Cloud.commentList(id) || [];
+    var n = list.length;
+    var html = '<div class="cmt" data-cmt-box="' + esc(id) + '">';
+    if(n){
+      var all = !!cmtOpenAll[id];
+      var shown = all ? list : list.slice(Math.max(0, n - 2));
+      if(!all && n > 2){
+        html += '<button class="cmt-more" data-cmt-more="' + esc(id) + '">댓글 ' + n + '개 모두 보기</button>';
+      }
+      html += '<div class="cmt-list">';
+      shown.forEach(function(c){ html += cmtRowHtml(c); });
+      html += '</div>';
+      if(all && n > 2){
+        html += '<button class="cmt-more" data-cmt-less="' + esc(id) + '">댓글 접기</button>';
+      }
+    }
+    html += '<form class="cmt-form" data-cmt-form="' + esc(id) + '" autocomplete="off">' +
+      '<input class="cmt-input" data-cmt-input="' + esc(id) + '" type="text" maxlength="300" placeholder="응원 댓글 남기기…" aria-label="응원 댓글" enterkeyhint="send">' +
+      '<button class="cmt-send" type="submit">등록</button>' +
+    '</form>' +
+    '</div>';
+    return html;
+  }
+
   function renderFeedCloud(){
     var box = $('#feed');
+    /* 다시 그리기 전에 입력 중인 댓글을 챙긴다 */
+    $$('[data-cmt-input]', box).forEach(function(inp){
+      cmtDrafts[inp.getAttribute('data-cmt-input')] = inp.value;
+    });
+    var active = document.activeElement;
+    var focusCmt = (active && active.getAttribute && active.getAttribute('data-cmt-input')) || null;
     var list = Cloud.feedItems();
     var me = Cloud.userKey();
     var html = '';
@@ -2108,6 +2322,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       var name = it.nickname || '익명';
       var done = !!(it.xeo && it.lemon && it.postime);
       var mine = (it.user_key === me);
+      var cmtN = (Cloud.commentList(it.id) || []).length;
       html += '<article class="post" data-id="' + esc(it.id) + '" data-cloud="1">' +
         '<div class="post-head">' +
           '<div class="post-avatar">' + esc(Array.from(name)[0] || '🌿') + '</div>' +
@@ -2124,12 +2339,22 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
         '<div class="post-actions">' +
           '<button class="react" data-react="h" aria-pressed="' + (rs.mh ? 'true' : 'false') + '">❤️ <span>' + rs.h + '</span></button>' +
           '<button class="react" data-react="c" aria-pressed="' + (rs.mc ? 'true' : 'false') + '">👏 <span>' + rs.c + '</span></button>' +
+          '<button class="react cmt-pill" data-cmt-focus="' + esc(it.id) + '" data-on="' + (cmtN ? '1' : '0') + '" aria-label="이 인증샷에 댓글 남기기">💬 <span>' + cmtN + '</span></button>' +
           (mine ? '<button class="share-mini" data-share="' + esc(it.date_str) + '">카톡 공유</button>' : '') +
         '</div>' +
+        cmtBlockHtml(it.id) +
       '</article>';
     });
 
     box.innerHTML = html;
+    $$('[data-cmt-input]', box).forEach(function(inp){
+      var id = inp.getAttribute('data-cmt-input');
+      if(cmtDrafts[id]) inp.value = cmtDrafts[id];
+    });
+    if(focusCmt){
+      var f = box.querySelector('[data-cmt-input="' + focusCmt + '"]');
+      if(f){ try{ f.focus({preventScroll: true}); }catch(e){ f.focus(); } }
+    }
   }
 
   function renderFeed(){
@@ -2647,7 +2872,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       '<input type="file" id="setImportFile" accept="application/json,.json" hidden>' +
       '<p class="field-hint">※ 이미 올린 인증샷은 서버에 남아 함께 인증샷 탭에 계속 보입니다.</p>' +
       '<button class="btn btn-danger-ghost" id="setReset">모든 기록 초기화</button>' +
-      '<p class="foot">21일 트리플챌린지 · v3.1 (사진 업로드 수정 · 카카오 로그인 · 실시간 채팅)<br>기록은 카카오 로그인 시 계정에, 로그인 전에는 내 폰에 저장됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
+      '<p class="foot">21일 트리플챌린지 · v3.2 (함께 인증샷 댓글 · 사진 업로드 수정 · 카카오 로그인 · 실시간 채팅)<br>기록은 카카오 로그인 시 계정에, 로그인 전에는 내 폰에 저장됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
       function(card){
         var kb = $('#setKakaoLogin', card);
         if(kb) kb.addEventListener('click', function(){
@@ -2950,6 +3175,29 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
         renderFeed();
         return;
       }
+      var cmtFocus = e.target.closest('[data-cmt-focus]');
+      if(cmtFocus){
+        var cidF = cmtFocus.getAttribute('data-cmt-focus');
+        var inpF = $('#feed').querySelector('[data-cmt-input="' + cidF + '"]');
+        if(inpF){
+          try{ inpF.scrollIntoView({block: 'center', behavior: 'smooth'}); }catch(err){}
+          inpF.focus();
+        }
+        return;
+      }
+      var cmtMore = e.target.closest('[data-cmt-more]');
+      if(cmtMore){ cmtOpenAll[cmtMore.getAttribute('data-cmt-more')] = true; renderFeed(); return; }
+      var cmtLess = e.target.closest('[data-cmt-less]');
+      if(cmtLess){ cmtOpenAll[cmtLess.getAttribute('data-cmt-less')] = false; renderFeed(); return; }
+      var cmtDel = e.target.closest('[data-cmt-del]');
+      if(cmtDel){
+        var delId = cmtDel.getAttribute('data-cmt-del');
+        if(cmtDel.disabled === false){ cmtDel.disabled = true; }
+        Cloud.removeComment(delId).then(function(r){
+          if(r !== 'ok') toast('댓글을 삭제하지 못했어요. 잠시 뒤 다시 시도해 주세요.');
+        });
+        return;
+      }
       var shareBtn = e.target.closest('[data-share]');
       if(shareBtn){ shareDay(shareBtn.getAttribute('data-share')); return; }
       var media = e.target.closest('[data-lightbox]');
@@ -2961,6 +3209,43 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
           $('#lightbox').hidden = false;
         }
       }
+    });
+
+    /* v3.2: 댓글 입력 — 입력 중인 글 보관 */
+    $('#feed').addEventListener('input', function(e){
+      var inp = e.target.closest('[data-cmt-input]');
+      if(inp) cmtDrafts[inp.getAttribute('data-cmt-input')] = inp.value;
+    });
+
+    /* v3.2: 댓글 등록 (Enter 또는 등록 버튼) */
+    $('#feed').addEventListener('submit', function(e){
+      var form = e.target.closest('[data-cmt-form]');
+      if(!form) return;
+      e.preventDefault();
+      var id = form.getAttribute('data-cmt-form');
+      var input = form.querySelector('[data-cmt-input]');
+      var btn = form.querySelector('.cmt-send');
+      if(!input || !btn || btn.disabled) return;
+      var text = String(input.value || '');
+      if(!text.trim()){ toast('댓글을 입력해 주세요'); input.focus(); return; }
+      if(!Cloud.isReady()){ toast('지금은 연결이 안 되어 댓글을 남길 수 없어요'); return; }
+      btn.disabled = true;
+      input.disabled = true;
+      Cloud.addComment(id, text).then(function(r){
+        btn.disabled = false;
+        input.disabled = false;
+        if(r === 'ok'){
+          cmtDrafts[id] = '';
+          renderFeed();
+          var again = $('#feed').querySelector('[data-cmt-input="' + id + '"]');
+          if(again){ try{ again.focus({preventScroll: true}); }catch(err){ again.focus(); } }
+        } else if(r === 'empty'){
+          toast('댓글을 입력해 주세요');
+          input.focus();
+        } else {
+          toast('댓글을 남기지 못했어요. 잠시 뒤 다시 시도해 주세요');
+        }
+      });
     });
 
     $('#lightboxClose').addEventListener('click', function(){
