@@ -1,6 +1,6 @@
 # 21일 트리플챌린지
 
-이오메가 리퀴드 · 레몬 · 포스티엠 21일 트리플챌린지 체크 & 인증 앱 (v2.6 · 실시간 채팅 · 오일·제품 안내 · 관리자 페이지 · 홈 화면 앱)
+이오메가 리퀴드 · 레몬 · 포스티엠 21일 트리플챌린지 체크 & 인증 앱 (v3.0 · 카카오 로그인 · 실시간 채팅 · 오일·제품 안내 · 관리자 페이지 · 홈 화면 앱)
 
 - 웹 앱(회원용): https://ssiz4333-afk.github.io/triple_21_challenge/
 - 관리자(대표님 전용): https://ssiz4333-afk.github.io/triple_21_challenge/admin.html
@@ -33,6 +33,18 @@
 - `index.html`이 `sw.js`를 등록하고, 실행 직후 0.9초 스플래시 시작 화면을 보여 줍니다.
 - 앱 안 `설정 → 📲 바탕화면 앱으로 추가하기`(또는 오늘 탭 안내 배너)에서 안드로이드 크롬은 바로 설치, 아이폰은 사파리 공유 → 홈 화면에 추가 안내를 봅니다.
 - 서비스 워커는 네트워크 우선이라 항상 최신 화면을 먼저 받고, 오프라인일 때만 캐시로 엽니다. (관리자 페이지는 캐시 제외)
+
+## 카카오 로그인 (v3.0)
+
+Supabase Auth 의 **커스텀 OIDC 제공자**(`custom:kakao-oidc`)로 카카오 로그인을 붙였습니다.
+
+- 카카오 디벨로퍼스 앱: `21일 트리플챌린지` (앱 ID 1664351, 회사명 아로마교육원, 카테고리 건강/피트니스)
+- 카카오 로그인 ON · OpenID Connect ON · 리다이렉트 URI `https://lfphrvtbpomajgzglbya.supabase.co/auth/v1/callback`
+- 동의항목: 닉네임(선택), 프로필 사진(선택). `account_email` 은 비즈 앱 전환 전에는 쓸 수 없습니다.
+- Supabase: `custom:kakao-oidc` (Issuer `https://kauth.kakao.com`, scopes `openid,profile_nickname,profile_image`, Allow users without an email ON)
+  - Supabase 기본 Kakao 제공자는 `account_email` 스코프를 강제로 붙여 KOE205 오류가 나므로 커스텀 OIDC 제공자를 씁니다.
+- 로그인하면 `userKey()` 가 Supabase auth 사용자 id 가 되고, 그 계정의 `checkins` 기록을 내려받아 기기 기록과 합칩니다(기기·서버 중 완료된 쪽 우선). 로그인 직후 `kapi.kakao.com/v1/oidc/userinfo` 로 닉네임·프로필 사진을 받아 초기값으로 채우고 `localStorage` 에 캐시합니다.
+- 로그아웃하면 다시 기기 임시 키로 돌아갑니다(기기에 남은 기록은 그대로).
 
 ## 링크 미리보기(OG 이미지)
 
