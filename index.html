@@ -3235,8 +3235,10 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
         btn.disabled = false;
         input.disabled = false;
         if(r === 'ok'){
+          /* 실시간 반영으로 입력창이 이미 새로 그려졌을 수 있으므로 지금 화면의 입력창을 비운다 */
           cmtDrafts[id] = '';
-          input.value = '';
+          var live = $('#feed').querySelector('[data-cmt-input="' + id + '"]');
+          if(live) live.value = '';
           renderFeed();
           var again = $('#feed').querySelector('[data-cmt-input="' + id + '"]');
           if(again){ try{ again.focus({preventScroll: true}); }catch(err){ again.focus(); } }
