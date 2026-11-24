@@ -2,7 +2,7 @@
    - 홈 화면 앱 설치 조건(오프라인 대응 fetch 핸들러) 충족
    - 네트워크 우선: 항상 최신 앱을 먼저 받아오고, 끊겼을 때만 캐시로 대체
 */
-const CACHE = 'triple21-v2.2.0';
+const CACHE = 'triple21-v2.3.0';
 const ASSETS = [
   './',
   './index.html',
