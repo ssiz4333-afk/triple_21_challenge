@@ -885,7 +885,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       if(!ready) return Promise.resolve(false);
       return client.auth.signInWithOAuth({
         provider: 'kakao',
-        options: {redirectTo: redirectUrl()}
+        options: {redirectTo: redirectUrl(), scopes: 'profile_nickname profile_image'}
       }).then(function(res){
         if(res && res.error) throw res.error;
         return true;
