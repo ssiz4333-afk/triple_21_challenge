@@ -347,6 +347,69 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
 .kit-card strong{display:block;font-size:13.5px;font-weight:900;letter-spacing:-.2px}
 .kit-card p{margin:4px 0 10px;font-size:11.5px;color:rgba(255,255,255,.86);font-weight:600;line-height:1.5}
 .kit-cta{display:inline-flex;align-items:center;gap:6px;background:#FFE15A;color:#4A3600;border-radius:999px;padding:9px 14px;font-size:12.5px;font-weight:900;text-decoration:none}
+
+/* ---------- v2.5 · 탭 5개 ---------- */
+.tabbar{grid-template-columns:repeat(5,1fr);gap:1px;padding:6px 5px calc(6px + env(safe-area-inset-bottom))}
+.tab{gap:2px;padding:7px 1px;border-radius:12px;font-size:9.5px;letter-spacing:-.2px}
+.tab svg{width:21px;height:21px}
+
+/* ---------- v2.5 · 채팅 ---------- */
+.chat-intro{display:flex;gap:9px;align-items:flex-start;margin:0 2px 13px;padding:12px 13px;border-radius:16px;background:var(--mint-soft);border:1px solid #CBEBDF;color:#0B5F47}
+.chat-intro>b{display:block;font-size:12.5px;font-weight:900;line-height:1.4}
+.chat-intro p{margin:4px 0 0;font-size:11.5px;font-weight:600;line-height:1.5;color:#2E6B57}
+.chat-list{display:flex;flex-direction:column;gap:9px;min-height:120px;padding-bottom:8px}
+.chat-empty{padding:30px 14px;text-align:center;font-size:12px;font-weight:700;line-height:1.7;color:var(--ink-3)}
+.chat-empty b{display:block;font-size:22px;margin-bottom:8px}
+.msg{display:flex;flex-direction:column;gap:3px;max-width:84%;align-items:flex-start}
+.msg.me{align-self:flex-end;align-items:flex-end}
+.msg-name{font-size:10.5px;font-weight:800;color:var(--ink-3);padding:0 5px}
+.msg-bubble{background:#fff;border:1px solid var(--line);border-radius:16px;border-top-left-radius:6px;padding:9px 12px;font-size:13.5px;line-height:1.45;color:var(--ink);box-shadow:0 2px 8px rgba(12,60,45,.05);word-break:break-word;white-space:pre-wrap}
+.msg.me .msg-bubble{background:linear-gradient(135deg,#0C8F6E,#14B98D);border-color:transparent;color:#fff;border-radius:16px;border-top-right-radius:6px;box-shadow:0 6px 14px rgba(12,143,110,.22)}
+.msg-time{font-size:9.5px;font-weight:700;color:var(--ink-3);padding:0 5px}
+.chat-note{margin:10px 2px 0;font-size:10.5px;font-weight:600;line-height:1.5;color:var(--ink-3);text-align:center}
+.chat-bar{position:fixed;left:50%;transform:translateX(-50%);width:100%;max-width:480px;bottom:calc(61px + env(safe-area-inset-bottom));z-index:35;display:flex;align-items:center;gap:7px;padding:9px 10px;background:rgba(255,255,255,.96);backdrop-filter:saturate(160%) blur(14px);-webkit-backdrop-filter:saturate(160%) blur(14px);border-top:1px solid var(--line)}
+.chat-bar input{flex:1;min-width:0;border:1.5px solid var(--line);background:#F8FBF9;border-radius:14px;padding:12px 13px;font-size:16px;color:inherit;outline:none}
+.chat-bar input:focus{border-color:var(--mint-2);background:#fff;box-shadow:0 0 0 3px rgba(18,181,139,.12)}
+.chat-send{flex:0 0 auto;width:46px;height:44px;border:none;border-radius:14px;background:linear-gradient(135deg,#0C8F6E,#14B98D);color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 6px 14px rgba(12,143,110,.24);transition:.15s}
+.chat-send:active{transform:scale(.94)}
+.chat-send:disabled{opacity:.45;box-shadow:none}
+.chat-send svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- v2.5 · 오일·제품 ---------- */
+.prod-hero{position:relative;overflow:hidden;border-radius:24px;padding:18px 17px 17px;color:#fff;background:linear-gradient(150deg,#07664E,#0C8F6E 58%,#12B58B)}
+.prod-hero::after{content:"";position:absolute;right:-84px;top:-96px;width:214px;height:214px;border-radius:50%;background:rgba(255,255,255,.11)}
+.prod-hero>*{position:relative;z-index:1}
+.prod-tag{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:5px 11px;font-size:11px;font-weight:900;background:var(--lemon);color:#4A3600;box-shadow:0 3px 10px rgba(0,0,0,.12)}
+.prod-hero h2{margin:11px 0 0;font-size:19px;font-weight:900;letter-spacing:-.6px;line-height:1.32}
+.prod-hero>p{margin:8px 0 0;font-size:12px;font-weight:600;line-height:1.55;color:rgba(255,255,255,.9)}
+.prod-hero ul{margin:13px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
+.prod-hero li{display:flex;gap:7px;font-size:11.5px;font-weight:700;line-height:1.45;color:rgba(255,255,255,.95)}
+.prod-card{margin-top:13px;background:#fff;border:1px solid var(--line);border-radius:22px;padding:15px;box-shadow:var(--shadow)}
+.prod-card.hl{border-color:#FFDB62;box-shadow:0 10px 24px rgba(255,216,77,.24)}
+.prod-top{display:flex;align-items:center;gap:11px}
+.prod-ico{width:48px;height:48px;flex:0 0 auto;border-radius:15px;display:grid;place-items:center;overflow:hidden;background:#fff;box-shadow:0 3px 9px rgba(12,60,45,.13)}
+.prod-ico img{display:block;width:100%;height:100%;object-fit:contain}
+.prod-name{flex:1;min-width:0}
+.prod-name strong{display:block;font-size:15px;font-weight:900;letter-spacing:-.3px}
+.prod-name span{display:block;margin-top:1px;font-size:10.5px;font-weight:700;letter-spacing:.2px;color:var(--ink-3)}
+.prod-badge{flex:0 0 auto;font-size:9.5px;font-weight:900;border-radius:999px;padding:4px 8px;white-space:nowrap;color:#0A6048;background:#DFF5EA;border:1px solid #BCE9D4}
+.prod-badge.aroma{color:#5A4200;background:#FFF3C4;border-color:#FFE28A}
+.prod-desc{margin:11px 0 0;font-size:12.5px;font-weight:600;line-height:1.6;color:var(--ink-2)}
+.prod-feats{margin:11px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
+.prod-feats li{position:relative;padding-left:17px;font-size:12px;font-weight:600;line-height:1.55;color:var(--ink-2)}
+.prod-feats li::before{content:"✓";position:absolute;left:0;top:0;font-size:11.5px;font-weight:900;color:var(--mint)}
+.prod-feats b{color:var(--ink);font-weight:800}
+.prod-use{margin:12px 0 0;padding:11px 12px;border-radius:14px;background:#F7FBF9;border:1px solid var(--line);font-size:11.5px;font-weight:600;line-height:1.6;color:var(--ink-2)}
+.prod-use b{color:var(--mint-dark);font-weight:900}
+.prod-warn{margin:9px 2px 0;font-size:10.5px;font-weight:600;line-height:1.5;color:#96702A}
+.synergy{margin-top:14px;border-radius:22px;padding:16px;background:linear-gradient(150deg,#F1FBF6,#FFFDF0);border:1px solid #D5EDE2}
+.synergy h3{margin:0;font-size:14.5px;font-weight:900;letter-spacing:-.3px}
+.synergy p{margin:6px 0 0;font-size:11.5px;font-weight:600;line-height:1.55;color:var(--ink-2)}
+.synergy ol{margin:11px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px;counter-reset:syn}
+.synergy li{counter-increment:syn;display:flex;gap:9px;font-size:12px;font-weight:600;line-height:1.55;color:var(--ink-2)}
+.synergy li::before{content:counter(syn);flex:0 0 auto;width:21px;height:21px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:900;background:var(--mint-soft);color:var(--mint-dark)}
+.synergy b{color:var(--ink);font-weight:800}
+.prod-foot{margin:14px 2px 0;font-size:10.5px;font-weight:600;line-height:1.6;color:var(--ink-3);text-align:center}
 </style>
 </head>
 <body>
@@ -508,7 +571,107 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       </div>
       <div id="feed"></div>
     </section>
+
+    <!-- ===== 채팅 ===== -->
+    <section class="view" id="view-chat">
+      <div class="chat-intro">
+        <span aria-hidden="true" style="font-size:16px;line-height:1.35">💬</span>
+        <div>
+          <b>함께 21일 챌린지 하는 회원님들과 실시간 응원·소통방</b>
+          <p>오늘의 루틴 자랑, 궁금한 점, 서로에게 보내는 응원을 자유롭게 나눠 주세요. 새 메시지는 바로 나타납니다.</p>
+        </div>
+      </div>
+      <div class="chat-list" id="chatList"></div>
+      <p class="chat-note" id="chatNote">닉네임을 정하면 회원님 이름으로 대화할 수 있어요.</p>
+    </section>
+
+    <!-- ===== 오일·제품 ===== -->
+    <section class="view" id="view-products">
+      <div class="prod-hero">
+        <span class="prod-tag">🌿 CPTG® 아로마오일</span>
+        <h2>왜 도테라<br>CPTG® 아로마오일인가?</h2>
+        <p>향기만 흉내 내는 오일이 아니라, 식물이 만든 향기 성분을 그대로 담아 품질을 검증한 에센셜 오일입니다.</p>
+        <ul>
+          <li><span aria-hidden="true">🌱</span><span><b>100% 순수 천연</b> 에센셜 오일 — 합성 첨가물·희석제를 넣지 않습니다.</span></li>
+          <li><span aria-hidden="true">🔬</span><span><b>CPTG 품질 테스트</b> — 순도·조성·오염물질까지 도테라 기준으로 확인합니다.</span></li>
+          <li><span aria-hidden="true">🍋</span><span>레몬은 <b>식품첨가물(착향)</b>로 등록되어 물·차에 1~2방울 음용할 수 있는 고순도 오일입니다.</span></li>
+          <li><span aria-hidden="true">💧</span><span><b>향기 · 도포 · 섭취</b> 세 가지 방식으로 매일의 루틴에 자연스럽게.</span></li>
+        </ul>
+      </div>
+
+      <div class="prod-card hl">
+        <div class="prod-top">
+          <div class="prod-ico" data-icon="l" style="background:#FFF8D6"></div>
+          <div class="prod-name"><strong>레몬 에센셜 오일</strong><span>Lemon · Citrus limon · 15 mL</span></div>
+          <span class="prod-badge aroma">아로마 하이라이트</span>
+        </div>
+        <p class="prod-desc">이탈리아 시칠리아와 브라질에서 수확한 레몬 껍질을 <b>냉압착(콜드프레스)</b>으로 추출한 100% 레몬 오일입니다. 상큼한 향의 주성분은 <b>리모넨</b>, β-피넨, γ-테르피넨. 15mL 한 병에 레몬 약 75개가 들어갑니다.</p>
+        <ul class="prod-feats">
+          <li><b>아침 물 한 잔</b> — 물 500mL에 1~2방울. 공식 사용법도 음료·차에 1~2방울입니다.</li>
+          <li><b>기분 리프레시</b> — 디퓨저에 3~4방울, 또는 손바닥에 1방울 떨어뜨려 향을 맡으면 상쾌하게 집중을 돕습니다.</li>
+          <li><b>주방·생활 다용도</b> — 물에 몇 방울 섞어 스프레이로 조리대·싱크대를 닦거나, 베이킹·샐러드·육류 요리에 소량 첨가해 풍미를 더합니다.</li>
+        </ul>
+        <div class="prod-use"><b>보관</b> 직사광선을 피해 서늘한 곳에. <b>주의</b> 피부 자극이 있을 수 있어 눈·귀 주변은 피하고, 피부에 닿았다면 12시간 자외선을 피해 주세요.</div>
+      </div>
+
+      <div class="prod-card">
+        <div class="prod-top">
+          <div class="prod-ico" data-icon="x" style="background:#E8F4FF"></div>
+          <div class="prod-name"><strong>이오 메가 리퀴드</strong><span>EO Mega+™ · 250 mL · 건강기능식품</span></div>
+          <span class="prod-badge">아로마 시너지</span>
+        </div>
+        <p class="prod-desc">청정 노르웨이산 EPA·DHA 함유 유지에 <b>도테라 레몬 에센셜 오일</b>과 그리스 Co-Impact Sourcing™ 엑스트라버진 올리브 오일을 더한 액상 오메가입니다. 1일 1,000mg(EPA+DHA 합) 고함량.</p>
+        <ul class="prod-feats">
+          <li><b>4중 기능성</b> — 혈중 중성지질 개선·혈행 개선·기억력 개선·건조한 눈 개선에 도움을 줄 수 있음(EPA 및 DHA 함유 유지).</li>
+          <li><b>비린내 없는 상큼한 레몬맛</b> — 에센셜 오일 블렌드 덕분에 캡슐이 부담스러운 분도 액상으로 편하게.</li>
+          <li><b>빠른 흡수</b> — 정제를 삼키기 어려운 분, 육류 위주 식습관으로 지방 섭취가 많은 분께 권장됩니다.</li>
+        </ul>
+        <div class="prod-use"><b>섭취</b> 1일 1회 10mL를 스푼에 덜어 그대로, 또는 샐러드·빵에. 개봉 후 냉장 보관, 냉동·가열은 금지. 항응고제·혈압강하제 복용 중이면 전문가와 상담하세요.</div>
+      </div>
+
+      <div class="prod-card">
+        <div class="prod-top">
+          <div class="prod-ico" data-icon="p" style="background:#E6F6EF"></div>
+          <div class="prod-name"><strong>포스티엠</strong><span>PHOSTM Cassis · 550 mL · 음료 베이스</span></div>
+          <span class="prod-badge">데일리 수분</span>
+        </div>
+        <p class="prod-desc">진한 블랙커런트의 달콤함을 그대로 담은 <b>미네랄 음료 베이스</b>입니다. 미네랄 컴플렉스(마그네슘·칼슘·요오드·망간·철·아연)에 블랙커런트·아로니아·레몬 주스, 꿀, 비타민C, L-카르니틴을 담았습니다.</p>
+        <ul class="prod-feats">
+          <li><b>10배 희석</b> — 15~30mL를 물·에이드·요거트에 넣어 상큼한 데일리 음료로.</li>
+          <li><b>하루 수분 루틴</b> — 물 마시는 습관이 어려운 분, 나른한 오후 리프레시가 필요한 분께.</li>
+          <li><b>간편한 액체 타입</b> — 미네랄 성분으로 침전물이 생길 수 있어 첨가 전 잘 흔들어 사용하세요.</li>
+        </ul>
+        <div class="prod-use"><b>보관</b> 개봉 후 반드시 냉장 보관하고 빠르게 소비(소비기한 15개월). 병에 입을 대고 마시지 마세요.</div>
+      </div>
+
+      <div class="synergy">
+        <h3>21일 트리플 시너지 루틴</h3>
+        <p>세 제품을 따로 먹기보다 <b>하루의 순서</b>로 묶으면 21일이 훨씬 가벼워집니다.</p>
+        <ol>
+          <li><span><b>아침 — 수분·미네랄로 시작</b><br>포스티엠 15~30mL를 물에 10배 희석해 한 잔.</span></li>
+          <li><span><b>식후 — 오메가로 채우기</b><br>이오 메가 리퀴드 10mL를 스푼으로 한 번.</span></li>
+          <li><span><b>하루 틈틈이 — 향과 물로 순환</b><br>레몬 1~2방울을 물 500mL에, 또는 디퓨저로 공간을 상쾌하게.</span></li>
+        </ol>
+        <div class="prod-use" style="margin-top:12px;background:#fff"><b>섭취 팁</b> 물은 하루 1.5~2L, 오일은 직사광선을 피해 서늘한 곳에. 21일 동안 <b>같은 시간</b>에 체크하는 습관이 완주의 핵심입니다.</div>
+      </div>
+
+      <div id="prodCta"></div>
+
+      <a class="maker" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">
+        <span class="maker-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.4l2.6 5.2 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8L12 3.4Z"/></svg></span>
+        <span>제품 문의 <b>@erang_coach</b></span>
+      </a>
+
+      <p class="prod-foot">본 제품은 질병의 예방 및 치료를 위한 의약품이 아닙니다.<br>건강 상태·복용 중인 약에 따라 전문가와 상담한 뒤 사용해 주세요.</p>
+    </section>
   </main>
+
+  <form class="chat-bar" id="chatForm" hidden autocomplete="off">
+    <input id="chatInput" type="text" maxlength="300" placeholder="메시지를 입력하세요" aria-label="채팅 메시지" enterkeyhint="send">
+    <button class="chat-send" id="chatSend" type="submit" aria-label="메시지 보내기">
+      <svg viewBox="0 0 24 24"><path d="M4.4 11.6 20 4.5l-7.1 15.6-1.6-6.4-6.9-2.1Z"/></svg>
+    </button>
+  </form>
 
   <nav class="tabbar" role="tablist" aria-label="주요 화면">
     <button class="tab active" data-tab="today" role="tab" aria-selected="true">
@@ -522,6 +685,14 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     <button class="tab" data-tab="feed" role="tab" aria-selected="false">
       <svg viewBox="0 0 24 24"><path d="M12 20.3s-7.3-4.5-7.3-9.4A4.2 4.2 0 0 1 12 8.1a4.2 4.2 0 0 1 7.3 2.8c0 4.9-7.3 9.4-7.3 9.4Z"/></svg>
       함께 인증샷
+    </button>
+    <button class="tab" data-tab="chat" role="tab" aria-selected="false">
+      <svg viewBox="0 0 24 24"><path d="M20.5 12c0 4.1-3.8 7.4-8.5 7.4-1 0-2-.14-2.9-.4L4.2 20.4l1.2-3.5C4 15.6 3.5 13.9 3.5 12c0-4.1 3.8-7.4 8.5-7.4s8.5 3.3 8.5 7.4Z"/><path d="M8.6 12h.02M12 12h.02M15.4 12h.02"/></svg>
+      채팅
+    </button>
+    <button class="tab" data-tab="products" role="tab" aria-selected="false">
+      <svg viewBox="0 0 24 24"><path d="M9.5 3.5h5M10 3.5v3.2c0 .5-.2.9-.6 1.2A4.5 4.5 0 0 0 7.5 11.5v6.4a2.6 2.6 0 0 0 2.6 2.6h3.8a2.6 2.6 0 0 0 2.6-2.6v-6.4a4.5 4.5 0 0 0-1.9-3.6 1.7 1.7 0 0 1-.6-1.2V3.5"/><path d="M7.6 14.4h8.8"/></svg>
+      오일·제품
     </button>
   </nav>
 </div>
@@ -814,6 +985,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
             settings.updated_at = row.updated_at || null;
           }
           renderNotice();
+          renderProductCta();
           return true;
         })
         .catch(function(e){
@@ -840,14 +1012,112 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       if(!init()) return false;
       load();
       loadSettings();
+      loadChat();
       subscribe();
+      subscribeChat();
       setInterval(function(){
         if(document.visibilityState !== 'hidden'){ load(); loadSettings(); }
       }, 60000);
       document.addEventListener('visibilitychange', function(){
-        if(document.visibilityState === 'visible'){ load(); loadSettings(); }
+        if(document.visibilityState === 'visible'){ load(); loadSettings(); loadChat(); }
       });
       return true;
+    }
+
+
+    /* ---------------- 실시간 채팅 (chat_messages) ---------------- */
+    var chatRows = [];
+    var chatSubscribed = false;
+    var chatLoading = false;
+
+    function chatList(){ return chatRows; }
+    function isChatLoading(){ return chatLoading; }
+
+    function loadChat(){
+      if(!ready) return Promise.resolve(false);
+      chatLoading = true;
+      if(currentTab === 'chat') renderChat();
+      return client.from('chat_messages')
+        .select('id,user_key,nickname,message,created_at')
+        .order('created_at', {ascending: false})
+        .limit(100)
+        .then(function(res){
+          if(res.error) throw res.error;
+          chatRows = (res.data || []).slice().reverse();
+          chatLoading = false;
+          if(currentTab === 'chat') renderChat(true);
+          return true;
+        })
+        .catch(function(e){
+          chatLoading = false;
+          console.warn('[triple21] 채팅 불러오기 실패', e);
+          if(currentTab === 'chat') renderChat();
+          return false;
+        });
+    }
+
+    function appendChat(row){
+      if(!row || !row.id) return;
+      for(var i = 0; i < chatRows.length; i++){
+        if(chatRows[i].id === row.id){
+          chatRows[i] = row;
+          if(currentTab === 'chat') renderChat();
+          return;
+        }
+      }
+      chatRows.push(row);
+      if(chatRows.length > 200) chatRows = chatRows.slice(-200);
+      if(currentTab === 'chat') renderChat(true);
+    }
+
+    function sendChat(text){
+      var body = String(text == null ? '' : text).replace(/\s+/g, ' ').trim().slice(0, 300);
+      if(!body) return Promise.resolve('empty');
+      if(!ready) return Promise.resolve('offline');
+      return client.from('chat_messages')
+        .insert({user_key: userKey(), nickname: nick(), message: body})
+        .select('id,user_key,nickname,message,created_at')
+        .single()
+        .then(function(res){
+          if(res.error) throw res.error;
+          if(res.data) appendChat(res.data);
+          return 'ok';
+        })
+        .catch(function(e){
+          console.warn('[triple21] 채팅 보내기 실패', e);
+          return 'fail';
+        });
+    }
+
+    function removeChat(id){
+      if(!ready) return Promise.resolve(false);
+      return client.from('chat_messages').delete().eq('id', id)
+        .then(function(res){
+          if(res.error) throw res.error;
+          chatRows = chatRows.filter(function(r){ return r.id !== id; });
+          if(currentTab === 'chat') renderChat();
+          return true;
+        })
+        .catch(function(){ return false; });
+    }
+
+    function subscribeChat(){
+      if(!ready || chatSubscribed) return;
+      try{
+        client.channel('triple21-chat')
+          .on('postgres_changes', {event: 'INSERT', schema: 'public', table: 'chat_messages'}, function(payload){
+            if(payload && payload.new) appendChat(payload.new);
+          })
+          .on('postgres_changes', {event: 'DELETE', schema: 'public', table: 'chat_messages'}, function(payload){
+            var old = payload && payload.old;
+            if(old && old.id){
+              chatRows = chatRows.filter(function(r){ return r.id !== old.id; });
+              if(currentTab === 'chat') renderChat();
+            }
+          })
+          .subscribe();
+        chatSubscribed = true;
+      }catch(e){}
     }
 
     return {
@@ -863,7 +1133,12 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       syncProfile: syncProfile,
       toggleReaction: toggleReaction,
       loadSettings: loadSettings,
-      getSettings: getSettings
+      getSettings: getSettings,
+      chatList: chatList,
+      isChatLoading: isChatLoading,
+      loadChat: loadChat,
+      sendChat: sendChat,
+      removeChat: removeChat
     };
   })();
 
@@ -1554,10 +1829,135 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     box.innerHTML = html;
   }
 
+
+  /* ================= 채팅 ================= */
+  function fmtTime(iso){
+    var d = new Date(iso || Date.now());
+    if(isNaN(d.getTime())) return '';
+    var h = d.getHours(), m = d.getMinutes();
+    var hh = h % 12; if(hh === 0) hh = 12;
+    return (h < 12 ? '오전' : '오후') + ' ' + hh + ':' + pad(m);
+  }
+
+  function renderChat(scroll){
+    var box = $('#chatList');
+    var note = $('#chatNote');
+    if(!box) return;
+    var myNick = (state.nickname || '').trim();
+
+    if(note){
+      note.textContent = myNick
+        ? (myNick + ' 님 이름으로 대화합니다 · 최근 100개 메시지')
+        : '닉네임을 정하면 회원님 이름으로 대화할 수 있어요.';
+      note.style.color = myNick ? '' : '#B4530A';
+    }
+    var input = $('#chatInput');
+    if(input) input.placeholder = myNick ? (myNick + ' 님, 메시지를 입력하세요') : '설정에서 닉네임을 먼저 정해 주세요';
+
+    if(!Cloud.isReady()){
+      box.innerHTML = '<div class="chat-empty"><b>📴</b>지금은 서버에 연결되어 있지 않아요.<br>인터넷 연결을 확인하면 대화가 다시 나타납니다.</div>';
+      return;
+    }
+    var list = Cloud.chatList();
+    if(!list.length){
+      box.innerHTML = '<div class="chat-empty"><b>💬</b>' + (Cloud.isChatLoading() ? '대화를 불러오는 중이에요…' : '아직 대화가 없어요.<br>첫 인사를 남겨 보세요!') + '</div>';
+      return;
+    }
+    var me = Cloud.userKey();
+    var html = '';
+    list.forEach(function(m){
+      var mine = (m.user_key === me);
+      var name = (m.nickname || '익명');
+      html += '<div class="msg' + (mine ? ' me' : '') + '">' +
+        (mine ? '' : '<div class="msg-name">' + esc(name) + '</div>') +
+        '<div class="msg-bubble">' + esc(m.message) + '</div>' +
+        '<div class="msg-time">' + fmtTime(m.created_at) + (mine ? ' · 나' : '') + '</div>' +
+      '</div>';
+    });
+    var nearBottom = (window.innerHeight + window.pageYOffset) >= (document.body.scrollHeight - 220);
+    box.innerHTML = html;
+    if(scroll || nearBottom){
+      setTimeout(function(){ window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'}); }, 30);
+    }
+  }
+
+  function updateChatBar(tab){
+    var bar = $('#chatForm');
+    if(!bar) return;
+    bar.hidden = (tab !== 'chat');
+  }
+
+  function submitChat(){
+    var input = $('#chatInput');
+    var btn = $('#chatSend');
+    if(!input || !btn) return;
+    var text = String(input.value || '');
+    if(!text.trim()){ toast('메시지를 입력해 주세요'); input.focus(); return; }
+    if(!(state.nickname || '').trim()){
+      toast('닉네임을 먼저 정해 주세요');
+      openSettings();
+      return;
+    }
+    if(!Cloud.isReady()){ toast('지금은 연결이 안 되어 메시지를 보낼 수 없어요'); return; }
+    btn.disabled = true;
+    input.disabled = true;
+    Cloud.sendChat(text).then(function(result){
+      btn.disabled = false;
+      input.disabled = false;
+      if(result === 'ok'){
+        input.value = '';
+        input.focus();
+        renderChat(true);
+      } else if(result === 'empty'){
+        toast('메시지를 입력해 주세요');
+      } else {
+        toast('메시지를 보내지 못했어요. 잠시 뒤 다시 시도해 주세요');
+      }
+    });
+  }
+
+  function bindChat(){
+    var form = $('#chatForm');
+    if(form){
+      form.addEventListener('submit', function(e){ e.preventDefault(); submitChat(); });
+    }
+    var input = $('#chatInput');
+    if(input){
+      input.addEventListener('keydown', function(e){
+        if(e.key === 'Enter' && !e.shiftKey && !e.isComposing){ e.preventDefault(); submitChat(); }
+      });
+    }
+  }
+
+  /* ================= 오일·제품 ================= */
+  function renderProductCta(){
+    var box = $('#prodCta');
+    if(!box) return;
+    var s = Cloud.getSettings() || {};
+    var label = String(s.cta_label || '').trim();
+    var url = String(s.cta_url || '').trim();
+    var html = '';
+    if(label && /^https?:\/\//.test(url)){
+      html = '<div class="kit-card">' +
+        '<strong>트리플 키트 · 구매 1:1 상담</strong>' +
+        '<p>이오 메가·레몬·포스티엠 구성과 21일 진행 방법이 궁금하면 편하게 물어보세요.</p>' +
+        '<a class="kit-cta" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + esc(label) + ' →</a>' +
+      '</div>';
+    } else {
+      html = '<div class="kit-card">' +
+        '<strong>트리플 키트 · 구매 1:1 상담</strong>' +
+        '<p>제품 구성·가격·진행 방법은 인스타그램 DM으로 편하게 문의해 주세요. 관리자 상담 링크가 열리면 여기에서 바로 연결됩니다.</p>' +
+        '<a class="kit-cta" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer">@erang_coach 상담 →</a>' +
+      '</div>';
+    }
+    box.innerHTML = html;
+  }
+
   function renderAll(){
     renderToday();
     renderCalendar();
     renderFeed();
+    if(currentTab === 'chat') renderChat();
   }
 
   /* ================= 탭 ================= */
@@ -1573,6 +1973,9 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     if(name === 'calendar') renderCalendar();
     if(name === 'feed') renderFeed();
     if(name === 'today') renderToday();
+    updateChatBar(name);
+    if(name === 'chat') renderChat(true);
+    if(name === 'products') renderProductCta();
   }
 
   /* ================= 카톡 공유 ================= */
@@ -1884,7 +2287,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       '<input type="file" id="setImportFile" accept="application/json,.json" hidden>' +
       '<p class="field-hint">※ 이미 올린 인증샷은 서버에 남아 함께 인증샷 탭에 계속 보입니다.</p>' +
       '<button class="btn btn-danger-ghost" id="setReset">모든 기록 초기화</button>' +
-      '<p class="foot">21일 트리플챌린지 · v2.4 (공지·상담 연결)<br>기록은 내 폰에 저장되고, 인증샷은 함께 인증샷 탭에서 회원들과 실시간 공유됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
+      '<p class="foot">21일 트리플챌린지 · v2.5 (실시간 채팅 · 오일·제품 안내)<br>기록은 내 폰에 저장되고, 인증샷은 함께 인증샷 탭에서 회원들과 실시간 공유됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
       function(card){
         $('#setSave', card).addEventListener('click', function(){
           var nick = ($('#setNick', card).value || '').trim().slice(0, 20);
@@ -2206,11 +2609,14 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
   registerServiceWorker();
   paintIcons();
   bindEvents();
+  bindChat();
   bindNotice();
   initTodayPhoto();
   lastComplete = complete(todayKey());
   renderAll();
   if(Cloud.start()) applyCloudUI();
+  updateChatBar(currentTab);
+  renderProductCta();
   setTimeout(hideSplash, SPLASH_MS);
   if(!state.onboarded){ setTimeout(openOnboard, SPLASH_MS + 220); }
 
