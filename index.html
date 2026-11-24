@@ -1127,6 +1127,9 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     function pushAll(){
       var chain = Promise.resolve();
       Object.keys(state.days || {}).forEach(function(k){
+        var r = state.days[k];
+        if(!r) return;
+        if(!r.x && !r.l && !r.p && !(r.memo || '').trim()) return; /* 빈 날짜는 올리지 않는다 */
         chain = chain.then(function(){ return pushCheckin(k); });
       });
       return chain;
