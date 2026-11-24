@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>21일 트리플챌린지 · 관리자</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07664E">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<style>
+:root{
+  --mint:#0C8F6E; --mint-2:#12B58B; --mint-dark:#07664E; --mint-soft:#E7F7F0;
+  --lemon:#FFE15A; --lemon-2:#FFD028; --lemon-soft:#FFF8D8;
+  --ink:#12241E; --ink-2:#496158; --ink-3:#8AA096;
+  --bg:#F1F7F3; --card:#fff; --line:#E3EDE7;
+  --danger:#C0392B; --danger-soft:#FDECEA;
+  --shadow:0 6px 20px rgba(12,60,45,.06);
+  color-scheme:light;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none !important}
+html,body{margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic","Noto Sans KR",sans-serif;
+  color:var(--ink); background:#DDE8E2;
+  background-image:radial-gradient(1100px 520px at 50% -180px,#C6E8DA,transparent 70%);
+  min-height:100dvh; -webkit-font-smoothing:antialiased;
+}
+button,input,textarea,select{font-family:inherit;font-size:100%}
+a{color:var(--mint-dark)}
+
+/* ---------- 로그인 ---------- */
+.gate{min-height:100dvh;display:grid;place-items:center;padding:22px}
+.gate-card{width:100%;max-width:380px;background:#fff;border-radius:24px;padding:26px 22px;box-shadow:0 20px 50px rgba(7,60,45,.14);border:1px solid var(--line)}
+.gate-logo{width:52px;height:52px;border-radius:16px;background:linear-gradient(140deg,var(--mint-dark),var(--mint-2));display:grid;place-items:center;margin-bottom:14px;box-shadow:0 8px 18px rgba(7,102,78,.24)}
+.gate-logo svg{width:28px;height:28px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.gate-tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.4px;color:var(--mint-dark);background:var(--mint-soft);border-radius:999px;padding:4px 10px;margin-bottom:10px}
+.gate-card h1{margin:0 0 6px;font-size:19px;letter-spacing:-.4px;font-weight:900}
+.gate-card p.desc{margin:0 0 18px;font-size:12.5px;line-height:1.55;color:var(--ink-2);font-weight:600}
+.gate-card input{width:100%;padding:13px 14px;border:1.5px solid var(--line);border-radius:13px;font-size:15px;outline:none;background:#FBFDFC}
+.gate-card input:focus{border-color:var(--mint);background:#fff;box-shadow:0 0 0 3px rgba(12,143,110,.10)}
+.gate-card button{width:100%;margin-top:12px;padding:13px;border:none;border-radius:13px;background:linear-gradient(120deg,var(--mint-dark),var(--mint-2));color:#fff;font-size:14.5px;font-weight:800;cursor:pointer;letter-spacing:-.2px}
+.gate-card button:disabled{opacity:.6;cursor:default}
+.err{margin:10px 0 0;font-size:12px;font-weight:700;color:var(--danger)}
+.gate-foot{margin:16px 0 0;font-size:11px;line-height:1.6;color:var(--ink-3);font-weight:600}
+
+/* ---------- 앱 ---------- */
+.app{max-width:1180px;margin:0 auto;padding:0 14px 40px}
+.appbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:12px 4px;background:rgba(241,247,243,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.brand-mark{width:38px;height:38px;border-radius:12px;background:linear-gradient(140deg,var(--mint-dark),var(--mint-2));display:grid;place-items:center;flex:0 0 auto;box-shadow:0 5px 14px rgba(7,102,78,.22)}
+.brand-mark svg{width:21px;height:21px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.brand-text{min-width:0}
+.brand-text h1{margin:0;font-size:15.5px;font-weight:900;letter-spacing:-.4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand-text p{margin:1px 0 0;font-size:11px;color:var(--ink-3);font-weight:700}
+.head-actions{display:flex;gap:6px;flex:0 0 auto}
+.btn-sm{border:1.5px solid var(--line);background:#fff;color:var(--ink-2);border-radius:11px;padding:8px 11px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap}
+.btn-sm:active{transform:scale(.97)}
+.btn-sm.primary{background:var(--mint-dark);border-color:var(--mint-dark);color:#fff}
+
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:12px 2px 4px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:0 0 auto;border:1.5px solid var(--line);background:#fff;color:var(--ink-2);border-radius:999px;padding:9px 15px;font-size:13px;font-weight:800;cursor:pointer;letter-spacing:-.2px}
+.tabs button.on{background:var(--mint-dark);border-color:var(--mint-dark);color:#fff}
+
+.statusline{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 2px 0;font-size:11.5px;color:var(--ink-3);font-weight:700}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--mint-2);display:inline-block;margin-right:5px}
+.dot.off{background:#D2A24C}
+.banner-err{margin:10px 0 0;padding:12px 14px;border-radius:14px;background:var(--danger-soft);border:1px solid #F5C6C0;color:#8E2B20;font-size:12.5px;font-weight:700;line-height:1.5}
+
+main{padding-top:6px}
+.section-title{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:20px 2px 10px}
+.section-title h2{margin:0;font-size:15.5px;font-weight:900;letter-spacing:-.35px}
+.section-title span{font-size:11.5px;color:var(--ink-3);font-weight:700}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px}
+.card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:15px 16px;box-shadow:var(--shadow)}
+.kpi-label{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:800;color:var(--ink-3);letter-spacing:-.1px}
+.kpi-value{margin:8px 0 0;font-size:27px;font-weight:900;letter-spacing:-1px;line-height:1.1}
+.kpi-value small{font-size:13px;font-weight:800;color:var(--ink-3);letter-spacing:0;margin-left:2px}
+.kpi-sub{margin:6px 0 0;font-size:11px;color:var(--ink-3);font-weight:700}
+.kpi-card.mint{background:linear-gradient(140deg,#07664E,#12B58B);border-color:transparent;color:#fff}
+.kpi-card.mint .kpi-label,.kpi-card.mint .kpi-sub{color:rgba(255,255,255,.82)}
+.kpi-card.mint .kpi-value small{color:rgba(255,255,255,.8)}
+.kpi-card.lemon{background:linear-gradient(140deg,#FFE15A,#FFC93C);border-color:transparent;color:#4A3600}
+.kpi-card.lemon .kpi-label,.kpi-card.lemon .kpi-sub{color:#7A5F00}
+.kpi-card.lemon .kpi-value small{color:#7A5F00}
+
+.panel{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:14px}
+.panel + .panel{margin-top:12px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.toolbar input[type=search],.toolbar select,.toolbar input[type=text]{padding:9px 12px;border:1.5px solid var(--line);border-radius:11px;font-size:12.5px;font-weight:600;background:#FBFDFC;outline:none;min-width:0}
+.toolbar input[type=search]{flex:1 1 180px}
+.toolbar input:focus,.toolbar select:focus{border-color:var(--mint);background:#fff}
+.toolbar .spacer{flex:1}
+
+.mlist{display:flex;flex-direction:column;gap:8px}
+.mhead{display:grid;grid-template-columns:1.5fr 1fr 1.7fr 1.05fr .9fr 26px;gap:10px;padding:0 10px 6px;font-size:11px;font-weight:800;color:var(--ink-3);letter-spacing:-.1px}
+.mrow{display:grid;grid-template-columns:1.5fr 1fr 1.7fr 1.05fr .9fr 26px;gap:10px;align-items:center;padding:11px 10px;border:1.5px solid var(--line);border-radius:14px;background:#fff;cursor:pointer;transition:.12s}
+.mrow:hover{border-color:#BFE6D6;background:#FBFEFC}
+.mname{display:flex;align-items:center;gap:8px;min-width:0}
+.mavatar{width:30px;height:30px;border-radius:10px;background:var(--mint-soft);color:var(--mint-dark);font-size:12px;font-weight:900;display:grid;place-items:center;flex:0 0 auto}
+.mname b{display:block;font-size:13.5px;font-weight:800;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mname i{display:block;font-size:10px;color:var(--ink-3);font-weight:700;font-style:normal}
+.mcell{font-size:12px;font-weight:700;color:var(--ink-2);white-space:nowrap}
+.mcell b{color:var(--ink);font-weight:900}
+.bar{height:8px;border-radius:999px;background:#EDF3EF;overflow:hidden;margin-top:5px}
+.bar > i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--mint),var(--mint-2))}
+.bar.win > i{background:linear-gradient(90deg,#FFD028,#FFE15A)}
+.chips{display:flex;gap:4px}
+.chip{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;font-size:10.5px;font-weight:900;background:#F0F4F2;color:#9BAEA6;border:1px solid #E4EDE8}
+.chip.on{background:var(--mint-soft);color:var(--mint-dark);border-color:#B7E5D3}
+.chev{color:var(--ink-3);font-size:14px;text-align:center}
+.empty{padding:34px 10px;text-align:center;color:var(--ink-3);font-size:12.5px;font-weight:700;line-height:1.6}
+
+.shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.shot{border:1.5px solid var(--line);border-radius:15px;overflow:hidden;background:#fff;display:flex;flex-direction:column}
+.shot-shot{position:relative;width:100%;aspect-ratio:1/1;background:#EEF4F1 center/cover no-repeat;display:grid;place-items:center;color:#A9BDB4;font-size:22px}
+.shot-shot img{width:100%;height:100%;object-fit:cover;display:block}
+.shot-body{padding:9px 10px 10px}
+.shot-meta{display:flex;justify-content:space-between;gap:6px;font-size:10.5px;color:var(--ink-3);font-weight:800}
+.shot-name{font-size:12.5px;font-weight:800;margin:2px 0 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shot-memo{font-size:11px;color:var(--ink-2);line-height:1.45;font-weight:600;margin:0 0 8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:16px}
+.shot-del{width:100%;border:1.5px solid #F3D3CE;background:#FDF4F2;color:var(--danger);border-radius:10px;padding:7px;font-size:11.5px;font-weight:800;cursor:pointer}
+
+.field{display:block;margin-bottom:12px}
+.field > span{display:block;font-size:11.5px;font-weight:800;color:var(--ink-2);margin-bottom:6px}
+.field input,.field textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:12px;font-size:13.5px;font-weight:600;background:#FBFDFC;outline:none;line-height:1.5}
+.field textarea{min-height:78px;resize:vertical}
+.field input:focus,.field textarea:focus{border-color:var(--mint);background:#fff;box-shadow:0 0 0 3px rgba(12,143,110,.10)}
+.field-hint{margin:-4px 0 12px;font-size:11px;color:var(--ink-3);font-weight:600;line-height:1.5}
+.btn{border:none;border-radius:12px;padding:12px 16px;font-size:13.5px;font-weight:800;cursor:pointer;letter-spacing:-.2px}
+.btn.primary{background:linear-gradient(120deg,var(--mint-dark),var(--mint-2));color:#fff}
+.btn.ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink-2)}
+.btn.danger{background:var(--danger-soft);border:1.5px solid #F3D3CE;color:var(--danger)}
+.btn:disabled{opacity:.55;cursor:default}
+.row-actions{display:flex;flex-wrap:wrap;gap:8px}
+
+.preview{border:1.5px dashed #CBE4D8;border-radius:14px;padding:12px;background:#FAFDFB}
+.preview .pv-bar{display:flex;align-items:center;gap:8px;background:#FFF6DA;border:1px solid #FFE08A;color:#7A5A00;border-radius:11px;padding:9px 11px;font-size:12px;font-weight:700;line-height:1.45}
+.preview .pv-cta{margin-left:auto;background:var(--mint-dark);color:#fff;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:800;white-space:nowrap;text-decoration:none}
+.preview .pv-empty{font-size:11.5px;color:var(--ink-3);font-weight:700}
+
+/* ---------- 모달 ---------- */
+.modal{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center;padding:0}
+.modal-back{position:absolute;inset:0;background:rgba(10,30,24,.42);backdrop-filter:blur(2px)}
+.modal-card{position:relative;width:100%;max-width:560px;max-height:88dvh;overflow:auto;background:#fff;border-radius:22px 22px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -14px 40px rgba(0,0,0,.18);animation:up .22s ease}
+@keyframes up{from{transform:translateY(18px);opacity:.6}to{transform:none;opacity:1}}
+@media(min-width:640px){
+  .modal{align-items:center}
+  .modal-card{border-radius:22px;max-height:86dvh;animation:none}
+}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+.modal-head h3{margin:0;font-size:16px;font-weight:900;letter-spacing:-.35px}
+.modal-head p{margin:4px 0 0;font-size:11.5px;color:var(--ink-3);font-weight:700}
+.modal-x{border:none;background:#F2F6F4;color:var(--ink-2);width:32px;height:32px;border-radius:10px;cursor:pointer;font-size:14px;flex:0 0 auto}
+.modal-body{font-size:12.5px;color:var(--ink-2);line-height:1.6;font-weight:600}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.modal-actions .btn{flex:1 1 auto}
+.day-list{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.day-row{display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid var(--line);border-radius:11px}
+.day-row.part{background:#FFFCF2;border-color:#F6E7C4}
+.day-row.done{background:#F4FCF8;border-color:#CBEBDC}
+.day-no{font-size:11px;font-weight:900;color:var(--ink-3);width:44px;flex:0 0 auto}
+.day-date{font-size:11.5px;font-weight:700;color:var(--ink-2);width:78px;flex:0 0 auto}
+.day-thumb{width:34px;height:34px;border-radius:8px;background:#EEF4F1 center/cover no-repeat;flex:0 0 auto;display:grid;place-items:center;font-size:12px;color:#A9BDB4;overflow:hidden;cursor:zoom-in}
+.day-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.day-memo{flex:1;font-size:11px;color:var(--ink-2);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);z-index:80;background:rgba(12,36,30,.94);color:#fff;padding:11px 16px;border-radius:999px;font-size:12.5px;font-weight:800;opacity:0;pointer-events:none;transition:.22s;max-width:88vw;text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+@media(max-width:760px){
+  .mhead{display:none}
+  .mrow{grid-template-columns:1fr auto;gap:6px 10px;padding:12px}
+  .mrow .mname{grid-column:1}
+  .mrow .mprog{grid-column:1 / -1}
+  .mrow .mcount{grid-column:1}
+  .mrow .mtoday{grid-column:2;justify-self:end}
+  .mrow .mlast{grid-column:1}
+  .mrow .chev{display:none}
+  .kpi-value{font-size:23px}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= 관리자 잠금 ================= -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M20 4.5c0 8.5-5 13.5-13.5 13.5H4.5C4.5 9.5 9.5 4.5 20 4.5Z"/><path d="M4.5 18c3-4.2 6.3-7.2 10.5-9.3"/></svg>
+    </div>
+    <span class="gate-tag">관리자 전용</span>
+    <h1>21일 트리플챌린지</h1>
+    <p class="desc">대표님만 쓰는 관리자 페이지입니다.<br>회원에게는 공유하지 않아 주세요.</p>
+    <form id="loginForm" autocomplete="on">
+      <input id="pw" type="password" inputmode="text" autocomplete="current-password" placeholder="관리자 비밀번호" aria-label="관리자 비밀번호">
+      <p class="err" id="loginErr" role="alert" hidden>비밀번호가 맞지 않습니다. 다시 확인해 주세요.</p>
+      <button type="submit" id="loginBtn">들어가기</button>
+    </form>
+    <p class="gate-foot">로그인은 이 브라우저 탭에서만 유지됩니다(탭을 닫으면 다시 입력).</p>
+  </div>
+</div>
+
+<!-- ================= 관리자 앱 ================= -->
+<div class="app" id="app" hidden>
+  <header class="appbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M20 4.5c0 8.5-5 13.5-13.5 13.5H4.5C4.5 9.5 9.5 4.5 20 4.5Z"/><path d="M4.5 18c3-4.2 6.3-7.2 10.5-9.3"/></svg>
+      </div>
+      <div class="brand-text">
+        <h1>21일 트리플챌린지 · 관리자</h1>
+        <p id="cohortLabel">대표님 전용</p>
+      </div>
+    </div>
+    <div class="head-actions">
+      <button class="btn-sm" id="btnRefresh" type="button">새로고침</button>
+      <button class="btn-sm" id="btnLogout" type="button">로그아웃</button>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button type="button" data-tab="dash" class="on" role="tab">대시보드</button>
+    <button type="button" data-tab="members" role="tab">회원 현황</button>
+    <button type="button" data-tab="shots" role="tab">인증샷 관리</button>
+    <button type="button" data-tab="settings" role="tab">공지·상담 설정</button>
+  </nav>
+
+  <div class="statusline">
+    <span><i class="dot" id="liveDot"></i><span id="liveText">불러오는 중…</span></span>
+    <span id="loadedAt"></span>
+  </div>
+  <div class="banner-err" id="errBox" hidden></div>
+
+  <main>
+    <!-- ===== 대시보드 ===== -->
+    <section id="tab-dash">
+      <div class="section-title"><h2>전체 요약</h2><span id="dashSub">-</span></div>
+      <div class="cards">
+        <div class="card kpi-card mint">
+          <div class="kpi-label">👥 총 참여 회원</div>
+          <div class="kpi-value" id="kpiMembers">-<small>명</small></div>
+          <div class="kpi-sub" id="kpiMembersSub">21일 챌린지 참여자</div>
+        </div>
+        <div class="card kpi-card">
+          <div class="kpi-label">✅ 오늘 3종 완료</div>
+          <div class="kpi-value" id="kpiToday">-<small>명</small></div>
+          <div class="kpi-sub" id="kpiTodaySub">오늘 기록한 회원 -</div>
+        </div>
+        <div class="card kpi-card lemon">
+          <div class="kpi-label">📸 누적 인증샷</div>
+          <div class="kpi-value" id="kpiShots">-<small>장</small></div>
+          <div class="kpi-sub" id="kpiShotsSub">사진 올린 기록 기준</div>
+        </div>
+        <div class="card kpi-card">
+          <div class="kpi-label">🏆 21일 완주자</div>
+          <div class="kpi-value" id="kpiFinish">-<small>명</small></div>
+          <div class="kpi-sub" id="kpiFinishSub">21일 모두 3종 완료</div>
+        </div>
+        <div class="card kpi-card">
+          <div class="kpi-label">📈 전체 평균 달성률</div>
+          <div class="kpi-value" id="kpiRate">-<small>%</small></div>
+          <div class="kpi-sub" id="kpiRateSub">완료일 ÷ 21일 평균</div>
+        </div>
+      </div>
+
+      <div class="section-title"><h2>오늘 현황</h2><span>3종 체크 기준</span></div>
+      <div class="panel">
+        <div class="toolbar" style="margin-bottom:10px">
+          <span style="font-size:12px;font-weight:800;color:var(--ink-2)">오늘 3종을 모두 채운 회원</span>
+          <span class="spacer"></span>
+          <span id="todayDoneCount" style="font-size:12px;font-weight:800;color:var(--mint-dark)">-</span>
+        </div>
+        <div id="todayDoneList" class="mlist"></div>
+        <p class="field-hint" style="margin:12px 0 0" id="todayHint"></p>
+      </div>
+    </section>
+
+    <!-- ===== 회원 ===== -->
+    <section id="tab-members" hidden>
+      <div class="section-title"><h2>회원별 진행 현황</h2><span id="memberSub">-</span></div>
+      <div class="panel">
+        <div class="toolbar">
+          <input type="search" id="memberSearch" placeholder="닉네임 검색" aria-label="닉네임 검색">
+          <select id="memberSort" aria-label="정렬">
+            <option value="rate">달성률순</option>
+            <option value="recent">최근 활동순</option>
+            <option value="days">참여일수순</option>
+            <option value="name">이름순</option>
+          </select>
+          <span class="spacer"></span>
+          <button class="btn-sm primary" id="btnCsvMembers" type="button">CSV 내보내기</button>
+        </div>
+        <div class="mhead">
+          <span>회원</span><span>참여 일수</span><span>달성률</span><span>오늘 체크</span><span>마지막 활동</span><span></span>
+        </div>
+        <div class="mlist" id="memberList"></div>
+      </div>
+      <p class="field-hint" style="margin:10px 2px 0">행을 누르면 그 회원의 21일 기록을 날짜별로 볼 수 있습니다. CSV는 엑셀에서 바로 열립니다(완주 여부·오늘 체크 포함).</p>
+    </section>
+
+    <!-- ===== 인증샷 ===== -->
+    <section id="tab-shots" hidden>
+      <div class="section-title"><h2>인증샷 피드 관리</h2><span id="shotSub">-</span></div>
+      <div class="panel">
+        <div class="toolbar">
+          <select id="shotUser" aria-label="회원 선택"><option value="">전체 회원</option></select>
+          <input type="search" id="shotSearch" placeholder="닉네임 검색" aria-label="닉네임 검색">
+          <span class="spacer"></span>
+          <button class="btn-sm danger" id="btnPurgeUser" type="button">선택 회원 기록 일괄 삭제</button>
+        </div>
+        <div class="shots" id="shotGrid"></div>
+        <div class="empty" id="shotEmpty" hidden>표시할 인증샷이 없습니다.</div>
+      </div>
+      <p class="field-hint" style="margin:10px 2px 0">삭제는 서버에서 바로 지워지고 되돌릴 수 없습니다. 확인 창에서 한 번 더 묻습니다. (사진 파일 자체는 저장소에 남을 수 있습니다.)</p>
+    </section>
+
+    <!-- ===== 설정 ===== -->
+    <section id="tab-settings" hidden>
+      <div class="section-title"><h2>공지사항 &amp; 상담 링크</h2><span id="settingsSub">-</span></div>
+      <div class="panel">
+        <label class="field"><span>기수 이름 (관리자 화면에만 표시)</span>
+          <input id="setCohort" type="text" maxlength="40" placeholder="예: 21일 트리플챌린지 1기">
+        </label>
+        <label class="field"><span>상단 공지 배너 문구</span>
+          <textarea id="setNotice" maxlength="200" placeholder="예: 이번 주 금요일 21시, 트리플 온라인세미나가 열립니다. (비우면 배너가 사라집니다)"></textarea>
+        </label>
+        <p class="field-hint">회원 앱 상단에 노란 배너로 표시됩니다. 비워 두면 배너가 나오지 않습니다.</p>
+        <label class="field"><span>상담 버튼 문구</span>
+          <input id="setCtaLabel" type="text" maxlength="30" placeholder="예: 트리플 키트 구매·상담">
+        </label>
+        <label class="field"><span>상담 버튼 링크</span>
+          <input id="setCtaUrl" type="url" maxlength="300" placeholder="https://open.kakao.com/o/...">
+        </label>
+        <p class="field-hint">카톡 오픈채팅·인스타 DM 등 https 주소를 넣어 주세요. 문구나 링크를 비우면 버튼이 나오지 않습니다.</p>
+
+        <div class="preview" id="previewBox"></div>
+
+        <div class="row-actions" style="margin-top:14px">
+          <button class="btn primary" id="btnSaveSettings" type="button">저장하고 회원 앱에 반영</button>
+          <button class="btn ghost" id="btnReloadSettings" type="button">서버 값 다시 불러오기</button>
+        </div>
+        <p class="field-hint" style="margin-top:10px" id="settingsUpdated">-</p>
+      </div>
+
+      <div class="panel">
+        <div class="section-title" style="margin:0 0 8px"><h2 style="font-size:14px">회원 앱</h2></div>
+        <div class="row-actions">
+          <a class="btn ghost" href="https://ssiz4333-afk.github.io/triple_21_challenge/" target="_blank" rel="noopener noreferrer" style="text-decoration:none;text-align:center">회원 앱 열기</a>
+          <a class="btn ghost" href="https://supabase.com/dashboard/project/lfphrvtbpomajgzglbya/editor" target="_blank" rel="noopener noreferrer" style="text-decoration:none;text-align:center">Supabase 데이터 보기</a>
+        </div>
+        <p class="field-hint" style="margin-top:10px">관리자 페이지 주소: <b>https://ssiz4333-afk.github.io/triple_21_challenge/admin.html</b><br>이 주소는 회원에게 공유하지 마세요.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="modal" id="modal" hidden>
+  <div class="modal-back" data-close></div>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-head">
+      <div><h3 id="modalTitle">-</h3><p id="modalSub"></p></div>
+      <button class="modal-x" type="button" data-close aria-label="닫기">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+(function(){
+  'use strict';
+
+  /* ============ 서버 설정 ============ */
+  var SUPA_URL = 'https://lfphrvtbpomajgzglbya.supabase.co';
+  var SUPA_KEY = 'sb_publishable_HVPlKES6Mut6Xw8nqsVoWA_fXCG1SyX';
+  var TOTAL = 21;
+  var WEEK = ['일','월','화','수','목','금','토'];
+  var ITEMS = [
+    {k:'xeo', short:'이', name:'이오메가'},
+    {k:'lemon', short:'레', name:'레몬'},
+    {k:'postime', short:'포', name:'포스티엠'}
+  ];
+
+  /* 관리자 잠금: 비밀번호는 해시로만 보관합니다. 평문은 보고서로만 전달됩니다. */
+  var PW_SALT = 'triple21-admin-v1';
+  var PW_HASH = 'f85f884cdb4e26a4eee8db9eb9ff14caf1b841c7f077ae16f3f43c3038cad4f5';
+  var SESSION_KEY = 'triple21.admin.session.v1';
+
+  var db = null;
+  var MODEL = {rows: [], members: [], settings: null, loadedAt: null, sort: 'rate', query: ''};
+  var liveChannel = null, reloadTimer = null, autoTimer = null;
+
+  /* ============ 유틸 ============ */
+  function $(s, r){ return (r || document).querySelector(s); }
+  function $$(s, r){ return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function pad(n){ return n < 10 ? '0' + n : '' + n; }
+  function todayKey(){
+    var d = new Date();
+    return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+  }
+  function parseKey(k){
+    var p = String(k || '').split('-');
+    if(p.length !== 3) return null;
+    var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    return isNaN(d.getTime()) ? null : d;
+  }
+  function fmtDate(k){
+    var d = parseKey(k);
+    if(!d) return k || '-';
+    return (d.getMonth()+1) + '/' + d.getDate() + ' (' + WEEK[d.getDay()] + ')';
+  }
+  function fmtDateTime(iso){
+    if(!iso) return '-';
+    var d = new Date(iso);
+    if(isNaN(d.getTime())) return '-';
+    return (d.getMonth()+1) + '/' + d.getDate() + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+  function relDay(k){
+    var a = parseKey(k), b = parseKey(todayKey());
+    if(!a || !b) return '';
+    var diff = Math.round((b - a) / 86400000);
+    if(diff === 0) return '오늘';
+    if(diff === 1) return '어제';
+    if(diff > 1) return diff + '일 전';
+    return '예정';
+  }
+  function toast(msg){
+    var t = $('#toast');
+    t.textContent = msg;
+    t.classList.add('on');
+    clearTimeout(t._tm);
+    t._tm = setTimeout(function(){ t.classList.remove('on'); }, 2200);
+  }
+  function sha256hex(text){
+    if(!window.crypto || !window.crypto.subtle){
+      return Promise.reject(new Error('이 브라우저에서는 보안 로그인을 쓸 수 없습니다. 최신 브라우저로 열어 주세요.'));
+    }
+    return window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function(buf){
+      var arr = new Uint8Array(buf), out = '';
+      for(var i = 0; i < arr.length; i++) out += ('0' + arr[i].toString(16)).slice(-2);
+      return out;
+    });
+  }
+
+  /* ============ 모달 ============ */
+  var modalResolve = null;
+  function openModal(opts){
+    $('#modalTitle').textContent = opts.title || '';
+    $('#modalSub').textContent = opts.sub || '';
+    $('#modalSub').hidden = !opts.sub;
+    var body = $('#modalBody');
+    if(typeof opts.body === 'string') body.innerHTML = opts.body;
+    else { body.innerHTML = ''; if(opts.body) body.appendChild(opts.body); }
+    var acts = $('#modalActions');
+    acts.innerHTML = '';
+    (opts.actions || []).forEach(function(a){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'btn ' + (a.kind || 'ghost');
+      b.textContent = a.label;
+      b.addEventListener('click', function(){
+        if(a.keepOpen){ if(a.onClick) a.onClick(b); return; }
+        closeModal();
+        if(a.onClick) a.onClick(b);
+      });
+      acts.appendChild(b);
+    });
+    $('#modal').hidden = false;
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal(){
+    $('#modal').hidden = true;
+    document.body.style.overflow = '';
+    $('#modalBody').innerHTML = '';
+    $('#modalActions').innerHTML = '';
+    modalResolve = null;
+  }
+  function confirmModal(opts){
+    return new Promise(function(resolve){
+      modalResolve = resolve;
+      openModal({
+        title: opts.title,
+        sub: opts.sub,
+        body: '<p>' + opts.body + '</p>',
+        actions: [
+          {label: opts.cancelText || '취소', kind: 'ghost', onClick: function(){ resolve(false); }},
+          {label: opts.okText || '삭제', kind: opts.okKind || 'danger', onClick: function(){ resolve(true); } }
+        ]
+      });
+    });
+  }
+  $('#modal').addEventListener('click', function(e){
+    if(e.target.hasAttribute('data-close')){ closeModal(); if(modalResolve) modalResolve(false); }
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && !$('#modal').hidden){ closeModal(); if(modalResolve) modalResolve(false); }
+  });
+
+  /* ============ 로그인 ============ */
+  function showApp(){
+    $('#gate').hidden = true;
+    $('#app').hidden = false;
+    boot();
+  }
+  function tryLogin(pw){
+    return sha256hex(PW_SALT + '|' + pw).then(function(h){
+      if(h === PW_HASH){
+        try{ sessionStorage.setItem(SESSION_KEY, 'ok'); }catch(e){}
+        return true;
+      }
+      return false;
+    });
+  }
+  function loggedIn(){
+    try{ return sessionStorage.getItem(SESSION_KEY) === 'ok'; }catch(e){ return false; }
+  }
+
+  $('#loginForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var err = $('#loginErr'), btn = $('#loginBtn');
+    err.hidden = true;
+    var pw = $('#pw').value || '';
+    if(!pw){ err.textContent = '비밀번호를 입력해 주세요.'; err.hidden = false; return; }
+    btn.disabled = true; btn.textContent = '확인 중…';
+    tryLogin(pw).then(function(ok){
+      if(ok){ $('#pw').value = ''; showApp(); return; }
+      err.textContent = '비밀번호가 맞지 않습니다. 다시 확인해 주세요.';
+      err.hidden = false;
+      setTimeout(function(){ btn.disabled = false; btn.textContent = '들어가기'; }, 700);
+    }).catch(function(e2){
+      err.textContent = e2.message || '로그인 중 문제가 생겼습니다.';
+      err.hidden = false;
+      btn.disabled = false; btn.textContent = '들어가기';
+    });
+  });
+
+  $('#btnLogout').addEventListener('click', function(){
+    try{ sessionStorage.removeItem(SESSION_KEY); }catch(e){}
+    location.reload();
+  });
+
+  /* ============ 데이터 ============ */
+  function initClient(){
+    if(db) return true;
+    if(!SUPA_URL || !SUPA_KEY || !window.supabase || !window.supabase.createClient) return false;
+    db = window.supabase.createClient(SUPA_URL, SUPA_KEY, {
+      auth: {persistSession: false, autoRefreshToken: false, detectSessionInUrl: false}
+    });
+    return true;
+  }
+
+  function fetchAllCheckins(){
+    var all = [], pageSize = 1000;
+    function step(from){
+      return db.from('checkins').select('*')
+        .order('date_str', {ascending: false})
+        .order('created_at', {ascending: false})
+        .range(from, from + pageSize - 1)
+        .then(function(res){
+          if(res.error) throw res.error;
+          var data = res.data || [];
+          all = all.concat(data);
+          if(data.length < pageSize || all.length > 20000) return all;
+          return step(from + pageSize);
+        });
+    }
+    return step(0);
+  }
+
+  function fetchSettings(){
+    return db.from('app_settings').select('*').eq('id', 'default').limit(1)
+      .then(function(res){
+        if(res.error) throw res.error;
+        var row = (res.data || [])[0] || null;
+        return row || {id: 'default', notice_text: '', cta_label: '', cta_url: '', cohort_name: '', updated_at: null};
+      });
+  }
+
+  function buildMembers(rows){
+    var map = {}, today = todayKey();
+    rows.forEach(function(r){
+      var key = r.user_key || 'unknown';
+      var m = map[key];
+      if(!m){
+        m = map[key] = {key: key, nick: '', days: {}, rows: 0, complete: 0, photos: 0, last: '', lastAt: '', today: null, startKey: ''};
+      }
+      if(r.nickname) m.nick = r.nickname;
+      m.days[r.date_str] = r;
+      m.rows++;
+      if(r.xeo && r.lemon && r.postime) m.complete++;
+      if(r.photo_url) m.photos++;
+      if(r.date_str >= m.last) m.last = r.date_str;
+      if(!m.lastAt || (r.updated_at || r.created_at) > m.lastAt) m.lastAt = r.updated_at || r.created_at || '';
+      var first = Object.keys(m.days).sort()[0];
+      m.startKey = first || '';
+    });
+    return Object.keys(map).map(function(k){
+      var m = map[k];
+      var days = Object.keys(m.days).sort();
+      m.startKey = days[0] || '';
+      m.today = m.days[today] || null;
+      m.rate = Math.min(100, Math.round((m.complete / TOTAL) * 1000) / 10);
+      m.nick = (m.nick || '').trim() || '이름 없음';
+      m.keyTail = m.key.slice(-4);
+      return m;
+    });
+  }
+
+  function applyModel(rows, settings){
+    MODEL.rows = rows || [];
+    MODEL.members = buildMembers(MODEL.rows);
+    if(settings) MODEL.settings = settings;
+    MODEL.loadedAt = new Date();
+  }
+
+  function loadAll(silent){
+    if(!initClient()){ showErr('서버 연결 스크립트를 불러오지 못했습니다. 새로고침해 주세요.'); return Promise.resolve(false); }
+    setLive('loading');
+    return Promise.all([fetchAllCheckins(), fetchSettings()])
+      .then(function(out){
+        applyModel(out[0], out[1]);
+        showErr(null);
+        setLive('ok');
+        renderAll();
+        return true;
+      })
+      .catch(function(e){
+        console.warn('[admin] 불러오기 실패', e);
+        setLive('error');
+        showErr('데이터를 불러오지 못했습니다: ' + (e && (e.message || e.hint) ? (e.message || e.hint) : '알 수 없는 오류') + ' — 잠시 후 새로고침해 주세요.');
+        if(!silent) toast('불러오기 실패');
+        return false;
+      });
+  }
+
+  function showErr(msg){
+    var box = $('#errBox');
+    if(!msg){ box.hidden = true; box.textContent = ''; return; }
+    box.textContent = msg;
+    box.hidden = false;
+  }
+  function setLive(mode){
+    var dot = $('#liveDot'), text = $('#liveText');
+    if(mode === 'ok'){ dot.classList.remove('off'); text.textContent = '서버 연결됨 · 실시간 반영 중'; }
+    else if(mode === 'loading'){ dot.classList.remove('off'); text.textContent = '불러오는 중…'; }
+    else { dot.classList.add('off'); text.textContent = '연결 지연'; }
+    $('#loadedAt').textContent = MODEL.loadedAt ? '마지막 갱신 ' + fmtDateTime(MODEL.loadedAt.toISOString()) : '';
+  }
+
+  /* ============ 렌더: 공통 ============ */
+  function renderAll(){
+    renderCohort();
+    renderDash();
+    renderMembers();
+    renderShots();
+    renderSettings();
+  }
+
+  function renderCohort(){
+    var s = MODEL.settings || {};
+    $('#cohortLabel').textContent = (s.cohort_name || '').trim() || '대표님 전용';
+  }
+
+  /* ============ 렌더: 대시보드 ============ */
+  function renderDash(){
+    var members = MODEL.members, today = todayKey();
+    var totalPhotos = MODEL.rows.filter(function(r){ return !!r.photo_url; }).length;
+    var finished = members.filter(function(m){ return m.complete >= TOTAL; }).length;
+    var avg = members.length
+      ? Math.round(members.reduce(function(a, m){ return a + (m.complete / TOTAL); }, 0) / members.length * 1000) / 10
+      : 0;
+    var todayDone = members.filter(function(m){ return m.today && m.today.xeo && m.today.lemon && m.today.postime; });
+    var todayAny = members.filter(function(m){ return m.today && (m.today.xeo || m.today.lemon || m.today.postime || m.today.photo_url); });
+
+    $('#kpiMembers').innerHTML = members.length + '<small>명</small>';
+    $('#kpiMembersSub').textContent = '기록 1건 이상 남긴 회원';
+    $('#kpiToday').innerHTML = todayDone.length + '<small>명</small>';
+    $('#kpiTodaySub').textContent = '오늘 기록한 회원 ' + todayAny.length + '명';
+    $('#kpiShots').innerHTML = totalPhotos + '<small>장</small>';
+    $('#kpiShotsSub').textContent = '사진 올린 기록 기준';
+    $('#kpiFinish').innerHTML = finished + '<small>명</small>';
+    $('#kpiFinishSub').textContent = '3종 완료 ' + TOTAL + '일 달성';
+    $('#kpiRate').innerHTML = (Math.round(avg * 10) / 10) + '<small>%</small>';
+    $('#kpiRateSub').textContent = members.length ? '회원 평균 완료일 ' + (Math.round(members.reduce(function(a,m){return a+m.complete;},0) / members.length * 10) / 10) + '일' : '아직 데이터 없음';
+    $('#dashSub').textContent = fmtDate(today) + ' 기준';
+
+    $('#todayDoneCount').textContent = todayDone.length + ' / ' + members.length + '명';
+    var list = $('#todayDoneList');
+    if(!todayDone.length){
+      list.innerHTML = '<div class="empty">아직 오늘 3종을 모두 채운 회원이 없습니다.<br>체크는 회원 앱에서 저장되는 즉시 반영됩니다.</div>';
+    } else {
+      list.innerHTML = todayDone.slice().sort(function(a, b){ return (b.lastAt || '').localeCompare(a.lastAt || ''); }).map(function(m){
+        return '<div class="mrow" style="cursor:default">' +
+          '<div class="mname"><span class="mavatar">' + esc(firstChar(m.nick)) + '</span><div><b>' + esc(m.nick) + '</b><i>' + esc(m.keyTail) + '</i></div></div>' +
+          '<div class="mcell">오늘 <b>3/3</b></div>' +
+          '<div class="mprog"><div class="bar"><i style="width:' + m.rate + '%"></i></div></div>' +
+          '<div class="mcell">' + fmtDateTime(m.today.updated_at || m.today.created_at) + '</div>' +
+          '<div class="mtoday chips">' + chips(m.today) + '</div>' +
+          '<div class="chev"></div>' +
+        '</div>';
+      }).join('');
+    }
+    $('#todayHint').textContent = todayAny.length
+      ? '오늘 ' + todayAny.length + '명이 체크를 남겼고, 그중 ' + todayDone.length + '명이 3종을 모두 완료했습니다.'
+      : '오늘 남겨진 체크가 아직 없습니다.';
+  }
+
+  function firstChar(s){ return (String(s || '?').trim()[0] || '?'); }
+  function chips(row){
+    return ITEMS.map(function(it){
+      var on = !!(row && row[it.k]);
+      return '<span class="chip' + (on ? ' on' : '') + '" title="' + it.name + (on ? ' 완료' : ' 미완료') + '">' + it.short + '</span>';
+    }).join('');
+  }
+
+  /* ============ 렌더: 회원 ============ */
+  function sortedMembers(){
+    var q = (MODEL.query || '').trim().toLowerCase();
+    var list = MODEL.members.filter(function(m){
+      if(!q) return true;
+      return m.nick.toLowerCase().indexOf(q) >= 0 || m.keyTail.indexOf(q) >= 0;
+    });
+    var sort = MODEL.sort;
+    list.sort(function(a, b){
+      if(sort === 'rate'){ if(b.complete !== a.complete) return b.complete - a.complete; return (b.last || '').localeCompare(a.last || ''); }
+      if(sort === 'recent'){ var c = (b.last || '').localeCompare(a.last || ''); if(c) return c; return (b.lastAt || '').localeCompare(a.lastAt || ''); }
+      if(sort === 'days'){ if(b.rows !== a.rows) return b.rows - a.rows; return b.complete - a.complete; }
+      return a.nick.localeCompare(b.nick, 'ko');
+    });
+    return list;
+  }
+
+  function renderMembers(){
+    var list = sortedMembers();
+    $('#memberSub').textContent = MODEL.members.length + '명 · ' + (MODEL.query ? '검색 ' + list.length + '명' : '전체');
+    var box = $('#memberList');
+    if(!list.length){
+      box.innerHTML = '<div class="empty">' + (MODEL.query ? '검색 결과가 없습니다.' : '아직 회원 기록이 없습니다.') + '</div>';
+      return;
+    }
+    box.innerHTML = list.map(function(m){
+      return '<div class="mrow" data-key="' + esc(m.key) + '" tabindex="0" role="button" aria-label="' + esc(m.nick) + ' 상세 기록 보기">' +
+        '<div class="mname"><span class="mavatar">' + esc(firstChar(m.nick)) + '</span><div><b>' + esc(m.nick) + '</b><i>' + esc(m.keyTail) + '</i></div></div>' +
+        '<div class="mcell mcount">참여 <b>' + m.rows + '일</b></div>' +
+        '<div class="mprog"><div class="mcell" style="display:flex;justify-content:space-between"><span>완료 <b>' + m.complete + ' / ' + TOTAL + '일</b></span><span>' + m.rate + '%</span></div>' +
+          '<div class="bar' + (m.complete >= TOTAL ? ' win' : '') + '"><i style="width:' + m.rate + '%"></i></div></div>' +
+        '<div class="mcell mtoday chips">' + (m.today ? chips(m.today) : '<span style="font-size:11px;color:var(--ink-3)">기록 없음</span>') + '</div>' +
+        '<div class="mcell mlast">' + (m.last ? fmtDate(m.last) : '-') + '<br><span style="font-size:10px;color:var(--ink-3)">' + (m.last ? relDay(m.last) : '') + '</span></div>' +
+        '<div class="chev">›</div>' +
+      '</div>';
+    }).join('');
+    $$('#memberList .mrow').forEach(function(row){
+      row.addEventListener('click', function(){ openMember(row.getAttribute('data-key')); });
+      row.addEventListener('keydown', function(e){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openMember(row.getAttribute('data-key')); } });
+    });
+  }
+
+  function openMember(key){
+    var m = MODEL.members.filter(function(x){ return x.key === key; })[0];
+    if(!m) return;
+    var days = Object.keys(m.days).sort();
+    var body = document.createElement('div');
+    var head = '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">' +
+      '<span class="chip on" style="width:auto;padding:4px 9px">참여 ' + m.rows + '일</span>' +
+      '<span class="chip on" style="width:auto;padding:4px 9px">3종 완료 ' + m.complete + '일</span>' +
+      '<span class="chip on" style="width:auto;padding:4px 9px">달성률 ' + m.rate + '%</span>' +
+      '<span class="chip on" style="width:auto;padding:4px 9px">인증샷 ' + m.photos + '장</span>' +
+      (m.complete >= TOTAL ? '<span class="chip on" style="width:auto;padding:4px 9px;background:#FFF6DA;border-color:#FFE08A;color:#7A5A00">🏆 완주</span>' : '') +
+      '</div>';
+    var rowsHtml = days.map(function(k, i){
+      var r = m.days[k];
+      var done = r.xeo && r.lemon && r.postime;
+      var part = (r.xeo || r.lemon || r.postime) && !done;
+      var photo = r.photo_url
+        ? '<a class="day-thumb" href="' + esc(r.photo_url) + '" target="_blank" rel="noopener noreferrer"><img src="' + esc(r.photo_url) + '" alt="인증샷" loading="lazy"></a>'
+        : '<span class="day-thumb">–</span>';
+      return '<div class="day-row' + (done ? ' done' : part ? ' part' : '') + '">' +
+        '<span class="day-no">Day ' + (r.day_no || (i+1)) + '</span>' +
+        '<span class="day-date">' + fmtDate(k) + '</span>' +
+        '<span class="chips">' + chips(r) + '</span>' +
+        photo +
+        '<span class="day-memo">' + esc(r.memo || '') + '</span>' +
+      '</div>';
+    }).join('');
+    body.innerHTML = head + (rowsHtml || '<div class="empty">기록이 없습니다.</div>');
+    openModal({
+      title: m.nick + ' · 21일 기록',
+      sub: '회원키 ' + m.key + ' · 마지막 활동 ' + (m.last ? fmtDate(m.last) + ' ' + relDay(m.last) : '-'),
+      body: body,
+      actions: [{label: '닫기', kind: 'ghost'}]
+    });
+  }
+
+  /* ============ CSV ============ */
+  function csvCell(v){
+    var s = String(v == null ? '' : v);
+    if(/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+  function downloadCsv(filename, rows){
+    var text = '\ufeff' + rows.map(function(r){ return r.map(csvCell).join(','); }).join('\r\n');
+    var blob = new Blob([text], {type: 'text/csv;charset=utf-8;'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 3000);
+  }
+  function exportMembersCsv(){
+    var list = sortedMembers();
+    if(!list.length){ toast('내보낼 회원이 없습니다'); return; }
+    var today = todayKey();
+    var head = ['닉네임','회원키','참여일수','3종완료일수','달성률(%)','완주여부','오늘_이오메가','오늘_레몬','오늘_포스티엠','오늘_3종완료','인증샷수','마지막활동일'];
+    var rows = [head];
+    list.forEach(function(m){
+      rows.push([
+        m.nick, m.key, m.rows, m.complete, m.rate,
+        m.complete >= TOTAL ? '완주' : '진행중',
+        m.today ? (m.today.xeo ? 'O' : 'X') : '-',
+        m.today ? (m.today.lemon ? 'O' : 'X') : '-',
+        m.today ? (m.today.postime ? 'O' : 'X') : '-',
+        m.today && m.today.xeo && m.today.lemon && m.today.postime ? 'O' : 'X',
+        m.photos, m.last || ''
+      ]);
+    });
+    downloadCsv('triple21_회원현황_' + today + '.csv', rows);
+    toast(list.length + '명 · CSV를 내려받았어요');
+  }
+
+  /* ============ 렌더: 인증샷 ============ */
+  function shotRows(){
+    var q = (MODEL.query || '').trim().toLowerCase();
+    var who = $('#shotUser').value;
+    return MODEL.rows.filter(function(r){
+      if(!r.photo_url) return false;
+      if(who && r.user_key !== who) return false;
+      if(q && String(r.nickname || '').toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    }).sort(function(a, b){ return (b.created_at || '').localeCompare(a.created_at || ''); });
+  }
+
+  function renderShots(){
+    var sel = $('#shotUser');
+    var cur = sel.value;
+    var members = MODEL.members.slice().sort(function(a, b){ return a.nick.localeCompare(b.nick, 'ko'); });
+    sel.innerHTML = '<option value="">전체 회원</option>' + members.map(function(m){
+      return '<option value="' + esc(m.key) + '">' + esc(m.nick) + ' (' + esc(m.keyTail) + ') · ' + m.photos + '장</option>';
+    }).join('');
+    sel.value = cur || '';
+    var who = sel.value;
+    var allShots = MODEL.rows.filter(function(r){ return !!r.photo_url; });
+    var list = shotRows();
+    $('#shotSub').textContent = '인증샷 ' + allShots.length + '장' + (who || MODEL.query ? ' · 표시 ' + list.length + '장' : '');
+    var grid = $('#shotGrid');
+    if(!list.length){
+      grid.innerHTML = '';
+      $('#shotEmpty').hidden = false;
+      return;
+    }
+    $('#shotEmpty').hidden = true;
+    grid.innerHTML = list.map(function(r){
+      return '<div class="shot" data-id="' + esc(r.id) + '">' +
+        '<a class="shot-shot" href="' + esc(r.photo_url) + '" target="_blank" rel="noopener noreferrer" aria-label="인증샷 크게 보기"><img src="' + esc(r.photo_url) + '" alt="' + esc(r.nickname || '') + ' 인증샷" loading="lazy"></a>' +
+        '<div class="shot-body">' +
+          '<div class="shot-meta"><span>' + esc(fmtDate(r.date_str)) + '</span><span>Day ' + esc(r.day_no || '-') + '</span></div>' +
+          '<div class="shot-name">' + esc(r.nickname || '이름 없음') + '</div>' +
+          '<p class="shot-memo">' + esc(r.memo || '') + '</p>' +
+          '<button class="shot-del" type="button" data-del="' + esc(r.id) + '">삭제</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+    $$('#shotGrid [data-del]').forEach(function(btn){
+      btn.addEventListener('click', function(){ confirmDeleteOne(btn.getAttribute('data-del')); });
+    });
+  }
+
+  function findRow(id){ return MODEL.rows.filter(function(r){ return r.id === id; })[0]; }
+
+  function confirmDeleteOne(id){
+    var r = findRow(id);
+    if(!r) return;
+    confirmModal({
+      title: '이 인증 기록을 삭제할까요?',
+      sub: (r.nickname || '') + ' · ' + fmtDate(r.date_str) + ' · Day ' + (r.day_no || '-'),
+      body: '서버에서 바로 지워지고 <b>되돌릴 수 없습니다</b>.<br>사진·소감·체크가 함께 사라지고, 좋아요·응원도 함께 정리됩니다.',
+      okText: '삭제하기'
+    }).then(function(ok){
+      if(!ok) return;
+      db.from('checkins').delete().eq('id', id).then(function(res){
+        if(res.error){ toast('삭제 실패: ' + (res.error.message || '')); return; }
+        toast('삭제했어요');
+        loadAll(true);
+      });
+    });
+  }
+
+  function purgeUser(){
+    var who = $('#shotUser').value;
+    if(!who){ toast('먼저 위에서 회원을 선택해 주세요'); $('#shotUser').focus(); return; }
+    var m = MODEL.members.filter(function(x){ return x.key === who; })[0];
+    if(!m){ toast('회원을 찾지 못했습니다'); return; }
+    var cnt = m.rows;
+    confirmModal({
+      title: m.nick + ' 님 기록 전체 삭제',
+      sub: '회원키 ' + m.key,
+      body: '이 회원의 <b>기록 ' + cnt + '건</b>을 서버에서 모두 삭제합니다.<br>되돌릴 수 없고, 인증샷도 피드에서 사라집니다.',
+      okText: cnt + '건 모두 삭제'
+    }).then(function(ok){
+      if(!ok) return;
+      var ids = MODEL.rows.filter(function(r){ return r.user_key === who; }).map(function(r){ return r.id; });
+      if(!ids.length){ toast('삭제할 기록이 없습니다'); return; }
+      var chain = Promise.resolve();
+      for(var i = 0; i < ids.length; i += 100){
+        (function(chunk){
+          chain = chain.then(function(){
+            return db.from('checkins').delete().in('id', chunk).then(function(res){
+              if(res.error) throw res.error;
+            });
+          });
+        })(ids.slice(i, i + 100));
+      }
+      chain.then(function(){
+        toast(ids.length + '건을 삭제했어요');
+        loadAll(true);
+      }).catch(function(e){
+        toast('삭제 실패: ' + (e.message || ''));
+        loadAll(true);
+      });
+    });
+  }
+
+  /* ============ 렌더: 설정 ============ */
+  function renderSettings(){
+    var s = MODEL.settings || {};
+    $('#setCohort').value = s.cohort_name || '';
+    $('#setNotice').value = s.notice_text || '';
+    $('#setCtaLabel').value = s.cta_label || '';
+    $('#setCtaUrl').value = s.cta_url || '';
+    $('#settingsSub').textContent = s.updated_at ? '마지막 저장 ' + fmtDateTime(s.updated_at) : '아직 저장된 값 없음';
+    $('#settingsUpdated').textContent = s.updated_at ? '서버 저장 시각: ' + fmtDateTime(s.updated_at) + ' (회원 앱은 새로 열 때 바로 반영)' : '';
+    renderPreview();
+  }
+  function renderPreview(){
+    var notice = ($('#setNotice').value || '').trim();
+    var label = ($('#setCtaLabel').value || '').trim();
+    var url = ($('#setCtaUrl').value || '').trim();
+    var box = $('#previewBox');
+    if(!notice && !(label && /^https?:\/\//.test(url))){
+      box.innerHTML = '<div class="pv-empty">공지 문구와 상담 버튼을 채우면 회원 앱에 이렇게 보입니다.</div>';
+      return;
+    }
+    box.innerHTML = '<div style="font-size:10.5px;font-weight:800;color:var(--ink-3);margin-bottom:7px">회원 앱 미리보기</div>' +
+      (notice ? '<div class="pv-bar"><span>📢</span><span>' + esc(notice) + '</span>' +
+        (label && /^https?:\/\//.test(url) ? '<span class="pv-cta">' + esc(label) + '</span>' : '') + '</div>' : '') +
+      (!notice && label && /^https?:\/\//.test(url) ? '<div class="pv-bar"><span>🎁</span><span>' + esc(label) + ' 버튼이 설정에 표시됩니다.</span></div>' : '');
+  }
+  ['#setNotice', '#setCtaLabel', '#setCtaUrl'].forEach(function(sel){
+    $(sel).addEventListener('input', renderPreview);
+  });
+
+  $('#btnSaveSettings').addEventListener('click', function(){
+    if(!initClient()){ toast('서버 연결 실패'); return; }
+    var btn = this;
+    var payload = {
+      id: 'default',
+      cohort_name: ($('#setCohort').value || '').trim().slice(0, 40),
+      notice_text: ($('#setNotice').value || '').trim().slice(0, 200),
+      cta_label: ($('#setCtaLabel').value || '').trim().slice(0, 30),
+      cta_url: ($('#setCtaUrl').value || '').trim().slice(0, 300),
+      updated_at: new Date().toISOString()
+    };
+    if(payload.cta_url && !/^https?:\/\//.test(payload.cta_url)){
+      toast('링크는 https:// 로 시작해야 합니다');
+      $('#setCtaUrl').focus();
+      return;
+    }
+    btn.disabled = true; btn.textContent = '저장 중…';
+    db.from('app_settings').upsert(payload, {onConflict: 'id'}).then(function(res){
+      btn.disabled = false; btn.textContent = '저장하고 회원 앱에 반영';
+      if(res.error) throw res.error;
+      MODEL.settings = payload;
+      renderCohort(); renderSettings();
+      toast('저장했어요 · 회원 앱에 반영됩니다');
+    }).catch(function(e){
+      btn.disabled = false; btn.textContent = '저장하고 회원 앱에 반영';
+      toast('저장 실패: ' + (e.message || '권한을 확인해 주세요'));
+    });
+  });
+
+  $('#btnReloadSettings').addEventListener('click', function(){
+    fetchSettings().then(function(row){
+      MODEL.settings = row;
+      renderSettings(); renderCohort();
+      toast('서버 값을 다시 불러왔어요');
+    }).catch(function(e){ toast('불러오기 실패: ' + (e.message || '')); });
+  });
+
+  /* ============ 이벤트 ============ */
+  $$('.tabs button').forEach(function(b){
+    b.addEventListener('click', function(){
+      $$('.tabs button').forEach(function(x){ x.classList.remove('on'); x.setAttribute('aria-selected', 'false'); });
+      b.classList.add('on'); b.setAttribute('aria-selected', 'true');
+      var tab = b.getAttribute('data-tab');
+      ['dash','members','shots','settings'].forEach(function(t){
+        $('#tab-' + t).hidden = (t !== tab);
+      });
+      if(tab === 'settings') renderSettings();
+      if(tab === 'shots') renderShots();
+    });
+  });
+
+  $('#memberSearch').addEventListener('input', function(){
+    MODEL.query = this.value;
+    renderMembers();
+    renderShots();
+  });
+  $('#memberSort').addEventListener('change', function(){ MODEL.sort = this.value; renderMembers(); });
+  $('#btnCsvMembers').addEventListener('click', exportMembersCsv);
+  $('#shotSearch').addEventListener('input', function(){ MODEL.query = this.value; renderShots(); });
+  $('#shotUser').addEventListener('change', renderShots);
+  $('#btnPurgeUser').addEventListener('click', purgeUser);
+
+  $('#btnRefresh').addEventListener('click', function(){
+    var b = this; b.disabled = true; b.textContent = '불러오는 중…';
+    loadAll().then(function(){ b.disabled = false; b.textContent = '새로고침'; toast('최신 상태로 갱신했어요'); });
+  });
+
+  /* ============ 부팅 / 실시간 ============ */
+  function boot(){
+    loadAll().then(function(){
+      if(!db) return;
+      if(liveChannel) return;
+      try{
+        liveChannel = db.channel('triple21-admin')
+          .on('postgres_changes', {event: '*', schema: 'public', table: 'checkins'}, function(){ scheduleReload(); })
+          .on('postgres_changes', {event: '*', schema: 'public', table: 'app_settings'}, function(){ scheduleReload(); })
+          .subscribe();
+      }catch(e){}
+      clearInterval(autoTimer);
+      autoTimer = setInterval(function(){
+        if(document.visibilityState === 'visible' && !$('#app').hidden) loadAll(true);
+      }, 60000);
+    });
+  }
+  function scheduleReload(){
+    clearTimeout(reloadTimer);
+    reloadTimer = setTimeout(function(){ loadAll(true); }, 700);
+  }
+
+  if(loggedIn()) showApp();
+  else { $('#pw').focus(); }
+})();
+</script>
+</body>
+</html>

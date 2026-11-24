@@ -1,8 +1,9 @@
 /* 21일 트리플챌린지 서비스 워커
    - 홈 화면 앱 설치 조건(오프라인 대응 fetch 핸들러) 충족
    - 네트워크 우선: 항상 최신 앱을 먼저 받아오고, 끊겼을 때만 캐시로 대체
+   - 관리자 페이지(admin.html)는 캐시하지 않습니다.
 */
-const CACHE = 'triple21-v2.3.0';
+const CACHE = 'triple21-v2.4.0';
 const ASSETS = [
   './',
   './index.html',
@@ -39,6 +40,7 @@ self.addEventListener('fetch', event => {
   let url;
   try { url = new URL(req.url); } catch (e) { return; }
   if (url.origin !== self.location.origin) return; /* Supabase·CDN 등은 그대로 통과 */
+  if (url.pathname.endsWith('/admin.html')) return; /* 관리자 페이지는 캐시 제외 */
 
   if (req.mode === 'navigate') {
     event.respondWith((async () => {
