@@ -865,15 +865,71 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     function sessionUser(){ return (session && session.user) ? session.user : null; }
     function userId(){ var u = sessionUser(); return (u && u.id) ? u.id : null; }
 
+    var PROFILE_STORE = 'triple21.kakaoprofile.v1';
+    var cachedProfile = {id:'', name:'', photo:''};
+
+    function readProfileCache(uid){
+      if(!uid) return null;
+      try{
+        var raw = localStorage.getItem(PROFILE_STORE);
+        if(!raw) return null;
+        var o = JSON.parse(raw);
+        return (o && o.id === uid) ? o : null;
+      }catch(e){ return null; }
+    }
+    function writeProfileCache(uid, name, photo){
+      if(!uid) return;
+      try{ localStorage.setItem(PROFILE_STORE, JSON.stringify({id:uid, name:name || '', photo:photo || ''})); }catch(e){}
+    }
+
     function profile(){
       var u = sessionUser();
       var m = (u && u.user_metadata) || {};
+      var name = String(m.name || m.preferred_username || m.nickname || m.full_name || '').trim();
+      var photo = String(m.avatar_url || m.picture || m.profile_image_url || '').trim();
+      if(u && cachedProfile.id === u.id){
+        if(!name) name = cachedProfile.name || '';
+        if(!photo) photo = cachedProfile.photo || '';
+      }
       return {
         id: (u && u.id) || '',
-        name: String(m.name || m.preferred_username || m.nickname || m.full_name || '').trim(),
-        photo: String(m.avatar_url || m.picture || m.profile_image_url || '').trim(),
+        name: name,
+        photo: photo,
         email: String((u && u.email) || '').trim()
       };
+    }
+
+    /* 카카오 OIDC userinfo로 닉네임·프로필 사진을 가져온다(로그인 직후 provider_token 보유 시) */
+    function fetchKakaoProfile(){
+      var u = sessionUser();
+      var tok = session && session.provider_token;
+      if(!u || !tok) return Promise.resolve(null);
+      return fetch('https://kapi.kakao.com/v1/oidc/userinfo', {
+        headers: {Authorization: 'Bearer ' + tok}
+      }).then(function(r){
+        if(!r || !r.ok) return null;
+        return r.json();
+      }).then(function(d){
+        if(!d) return null;
+        var name = String(d.nickname || (d.kakao_account && d.kakao_account.profile && d.kakao_account.profile.nickname) || '').trim();
+        var photo = String(d.picture || (d.kakao_account && d.kakao_account.profile && d.kakao_account.profile.profile_image_url) || '').trim();
+        return (name || photo) ? {name: name, photo: photo} : null;
+      }).catch(function(){ return null; });
+    }
+
+    /* 카카오 프로필을 반영하고, 닉네임이 비어 있으면 초기값으로 채운다 */
+    function adoptProfile(){
+      var uid = userId();
+      var c = readProfileCache(uid);
+      if(c) cachedProfile = {id:uid, name: c.name || '', photo: c.photo || ''};
+      var p = profile();
+      if(p.name && !(state.nickname || '').trim()){
+        state.nickname = p.name.slice(0, 20);
+        state.onboarded = true;
+        saveMeta();
+      }
+      renderAll();
+      renderAuthCard();
     }
 
     function redirectUrl(){
@@ -900,6 +956,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       if(!ready) return Promise.resolve(false);
       return Promise.resolve(client.auth.signOut()).then(function(){
         session = null;
+        cachedProfile = {id:'', name:'', photo:''};
         return true;
       }).catch(function(e){
         console.warn('[triple21] 로그아웃 실패', e);
@@ -940,15 +997,19 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     }
 
     function afterSignIn(){
-      var p = profile();
-      if(p.name && !(state.nickname || '').trim()){
-        state.nickname = p.name.slice(0, 20);
-        state.onboarded = true;
-        saveMeta();
-      }
-      renderAll();
-      renderAuthCard();
-      return pullMine().then(function(){
+      var uid = userId();
+      adoptProfile();
+      var need = !profile().name || !profile().photo;
+      var step = need ? fetchKakaoProfile() : Promise.resolve(null);
+      return step.then(function(d){
+        if(d && uid){
+          var cur = profile();
+          cachedProfile = {id: uid, name: d.name || cur.name, photo: d.photo || cur.photo};
+          writeProfileCache(uid, cachedProfile.name, cachedProfile.photo);
+          adoptProfile();
+        }
+        return pullMine();
+      }).then(function(){
         renderAll();
         return pushAll();
       }).then(function(){
