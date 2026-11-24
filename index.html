@@ -180,6 +180,19 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
 .btn-ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line);box-shadow:none}
 .btn-danger-ghost{background:#FFF6F5;color:#C33A2C;border:1.5px solid #F6D3CE;box-shadow:none;margin-top:10px;font-size:13.5px;padding:13px}
 .share-block{margin-top:16px}
+/* ---------- kakao login ---------- */
+.auth-card{margin-top:14px;padding:14px;border-radius:20px;background:#fff;border:1.5px solid #F3E6B4;box-shadow:0 10px 24px rgba(19,60,46,.07)}
+.auth-card.is-on{border-color:#DCEFE6;box-shadow:0 6px 16px rgba(19,60,46,.05)}
+.auth-card-head{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:900;color:#0B5F47;letter-spacing:-.3px}
+.auth-card-head svg{width:17px;height:17px;flex:0 0 auto;fill:#3A2A00}
+.auth-card p{margin:7px 0 12px;font-size:11.5px;line-height:1.55;color:#5E8F7D;font-weight:600;word-break:keep-all}
+.auth-card .btn{margin-top:0}
+.auth-me{display:flex;align-items:center;gap:10px}
+.auth-me .avatar{width:40px;height:40px;border-radius:50%;overflow:hidden;background:#E6F6EF;display:flex;align-items:center;justify-content:center;font-size:17px;flex:0 0 auto;color:#0B5F47}
+.auth-me .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.auth-me strong{display:block;font-size:13.5px;font-weight:900;color:var(--ink);letter-spacing:-.3px}
+.auth-me span{display:block;font-size:11px;color:var(--ink-3);font-weight:700;margin-top:2px}
+.auth-badge{display:inline-flex;align-items:center;margin-left:auto;font-size:10.5px;font-weight:800;color:#7A5C00;background:#FEF6CF;border-radius:999px;padding:4px 9px;flex:0 0 auto}
 .hint{margin:9px 2px 0;font-size:11.5px;color:var(--ink-3);font-weight:600;line-height:1.5;text-align:center}
 
 /* ---------- calendar ---------- */
@@ -478,6 +491,8 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
           <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
         </div>
       </div>
+
+      <div class="auth-card" id="authCard" hidden></div>
 
       <div class="notice" id="periodNotice" hidden></div>
 
@@ -817,7 +832,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       try{
         if(!CLOUD.url || !CLOUD.anon || !window.supabase || !window.supabase.createClient) return false;
         client = window.supabase.createClient(CLOUD.url, CLOUD.anon, {
-          auth: {persistSession: false, autoRefreshToken: false, detectSessionInUrl: false}
+          auth: {persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'implicit'}
         });
         ready = true;
       }catch(e){ ready = false; }
@@ -828,7 +843,10 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     function feedItems(){ return items; }
     function reactInfo(id){ return reacts[id] || {h:0, c:0, mh:false, mc:false}; }
 
+    /* 로그인 상태면 Supabase auth 사용자 id, 아니면 이 기기의 임시 키 */
     function userKey(){
+      var uid = userId();
+      if(uid) return uid;
       try{
         var k = localStorage.getItem(USER_KEY_STORE);
         if(!k){
@@ -837,6 +855,147 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
         }
         return k;
       }catch(e){ return 'ulocal'; }
+    }
+
+    /* ---------------- 카카오 로그인 (Supabase OAuth) ---------------- */
+    var session = null;
+    var appliedUserId = undefined, appliedOnce = false;
+    var authWired = false;
+
+    function sessionUser(){ return (session && session.user) ? session.user : null; }
+    function userId(){ var u = sessionUser(); return (u && u.id) ? u.id : null; }
+
+    function profile(){
+      var u = sessionUser();
+      var m = (u && u.user_metadata) || {};
+      return {
+        id: (u && u.id) || '',
+        name: String(m.name || m.preferred_username || m.nickname || m.full_name || '').trim(),
+        photo: String(m.avatar_url || m.picture || m.profile_image_url || '').trim(),
+        email: String((u && u.email) || '').trim()
+      };
+    }
+
+    function redirectUrl(){
+      var p = location.pathname.replace(/index\.html?$/i, '');
+      return location.origin + p;
+    }
+
+    function signInKakao(){
+      if(!ready) return Promise.resolve(false);
+      return client.auth.signInWithOAuth({
+        provider: 'kakao',
+        options: {redirectTo: redirectUrl()}
+      }).then(function(res){
+        if(res && res.error) throw res.error;
+        return true;
+      }).catch(function(e){
+        console.warn('[triple21] 카카오 로그인 시작 실패', e);
+        toast('카카오 로그인을 시작하지 못했어요. 잠시 뒤 다시 시도해 주세요.');
+        return false;
+      });
+    }
+
+    function signOut(){
+      if(!ready) return Promise.resolve(false);
+      return Promise.resolve(client.auth.signOut()).then(function(){
+        session = null;
+        return true;
+      }).catch(function(e){
+        console.warn('[triple21] 로그아웃 실패', e);
+        return false;
+      });
+    }
+
+    /* 계정에 저장된 내 21일 기록을 이 기기로 끌어와 합친다(서버·기기 중 완료된 쪽 우선) */
+    function pullMine(){
+      var uid = userId();
+      if(!uid) return Promise.resolve(false);
+      return client.from('checkins').select('*').eq('user_key', uid)
+        .then(function(res){
+          if(res.error) throw res.error;
+          var rows = res.data || [];
+          var changed = false;
+          rows.forEach(function(r){
+            var key = String(r.date_str || '');
+            if(!/^\d{4}-\d{2}-\d{2}$/.test(key)) return;
+            var cur = state.days[key] || {x:false, l:false, p:false, memo:'', photo:false};
+            var nx = !!cur.x || !!r.xeo;
+            var nl = !!cur.l || !!r.lemon;
+            var np = !!cur.p || !!r.postime;
+            var memo = (cur.memo || r.memo || '');
+            if(nx !== !!cur.x || nl !== !!cur.l || np !== !!cur.p || memo !== (cur.memo || '')){
+              cur.x = nx; cur.l = nl; cur.p = np; cur.memo = memo;
+              state.days[key] = cur;
+              changed = true;
+            }
+          });
+          if(changed) saveMeta();
+          return rows.length;
+        })
+        .catch(function(e){
+          console.warn('[triple21] 내 기록 불러오기 실패', e);
+          return 0;
+        });
+    }
+
+    function afterSignIn(){
+      var p = profile();
+      if(p.name && !(state.nickname || '').trim()){
+        state.nickname = p.name.slice(0, 20);
+        state.onboarded = true;
+        saveMeta();
+      }
+      renderAll();
+      renderAuthCard();
+      return pullMine().then(function(){
+        renderAll();
+        return pushAll();
+      }).then(function(){
+        if((state.nickname || '').trim()) syncProfile();
+        load();
+        return true;
+      }).catch(function(){ return false; });
+    }
+
+    function applySession(s){
+      session = s || null;
+      var uid = userId();
+      renderAuthCard();
+      if(appliedOnce && uid === appliedUserId){ renderAll(); return Promise.resolve(false); }
+      appliedOnce = true;
+      appliedUserId = uid;
+      load();
+      loadSettings();
+      loadChat();
+      subscribe();
+      subscribeChat();
+      if(uid) return afterSignIn();
+      renderAll();
+      return Promise.resolve(false);
+    }
+
+    function wireAuth(){
+      if(authWired) return;
+      authWired = true;
+      var hashErr = String(location.hash || '').match(/error=([^&]+)/);
+      client.auth.onAuthStateChange(function(event, s){
+        if(event === 'SIGNED_IN' || event === 'SIGNED_OUT'){
+          var next = (event === 'SIGNED_OUT') ? null : s;
+          session = next;
+          setTimeout(function(){ applySession(next); }, 0);
+        } else if(event === 'TOKEN_REFRESHED'){
+          session = s || session;
+        }
+      });
+      client.auth.getSession().then(function(res){
+        var s = (res && res.data) ? res.data.session : null;
+        if(!s && hashErr){
+          toast('카카오 로그인이 취소되었거나 실패했어요. 다시 시도해 주세요.');
+          try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){}
+        }
+        applySession(s);
+      }).catch(function(){ applySession(null); });
     }
 
     function nick(){
@@ -1011,11 +1170,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
 
     function start(){
       if(!init()) return false;
-      load();
-      loadSettings();
-      loadChat();
-      subscribe();
-      subscribeChat();
+      wireAuth();
       setInterval(function(){
         if(document.visibilityState !== 'hidden'){ load(); loadSettings(); }
       }, 60000);
@@ -1125,6 +1280,10 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       start: start,
       isReady: isReady,
       userKey: userKey,
+      sessionUser: sessionUser,
+      profile: profile,
+      signInKakao: signInKakao,
+      signOut: signOut,
       feedItems: feedItems,
       reactInfo: reactInfo,
       load: load,
@@ -1175,6 +1334,69 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     if(t) t.textContent = '회원들과 실시간으로 공유 중이에요';
     if(p) p.textContent = '인증 기록과 인증샷이 서버에 저장되어, 모든 회원이 함께 보고 응원할 수 있습니다. 새 인증샷은 자동으로 나타납니다.';
     if(b) b.hidden = true;
+  }
+
+  /* ================= 카카오 로그인 UI ================= */
+  var KAKAO_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.2c-4.5 0-8.2 2.8-8.2 6.3 0 2.2 1.4 4.2 3.6 5.5l-.9 3.1c-.1.4.3.7.7.4l3.5-2.2c.4.1.9.1 1.3.1 4.5 0 8.2-2.8 8.2-6.3S16.5 4.2 12 4.2Z"/></svg>';
+
+  function renderAuthCard(){
+    var box = $('#authCard');
+    if(!box) return;
+    if(!Cloud.isReady()){ box.hidden = true; return; }
+    box.hidden = false;
+    var u = Cloud.sessionUser();
+    if(u){
+      var p = Cloud.profile();
+      box.className = 'auth-card is-on';
+      box.innerHTML =
+        '<div class="auth-me">' +
+          '<div class="avatar">' + (p.photo ? '<img src="' + esc(p.photo) + '" alt="">' : '🌿') + '</div>' +
+          '<div><strong>' + esc(p.name || (state.nickname || '').trim() || '카카오 회원') + '</strong><span>카카오 로그인 · 기록이 계정에 저장돼요</span></div>' +
+          '<span class="auth-badge">연결됨</span>' +
+        '</div>';
+    } else {
+      box.className = 'auth-card';
+      box.innerHTML =
+        '<div class="auth-card-head">' + KAKAO_ICON + '카카오로 3초, 기록 영구 보관</div>' +
+        '<p>지금은 이 기기에만 저장돼요. 카카오로 로그인하면 폰·PC·브라우저를 바꿔도 내 21일 기록이 그대로 이어집니다.</p>' +
+        '<button class="btn btn-kakao" id="btnKakaoLogin" type="button">' + KAKAO_ICON + '카카오로 3초 시작하기</button>';
+    }
+  }
+
+  function authSettingsHtml(){
+    if(!Cloud.isReady()) return '';
+    var u = Cloud.sessionUser();
+    if(u){
+      var p = Cloud.profile();
+      return '<div class="auth-card is-on" style="margin-top:2px">' +
+        '<div class="auth-me">' +
+          '<div class="avatar">' + (p.photo ? '<img src="' + esc(p.photo) + '" alt="">' : '🌿') + '</div>' +
+          '<div><strong>' + esc(p.name || '카카오 회원') + '</strong><span>카카오 계정으로 로그인됨</span></div>' +
+          '<span class="auth-badge">연결됨</span>' +
+        '</div>' +
+        '<button class="btn btn-ghost" id="setLogout" style="margin-top:12px;font-size:13px;padding:12px">로그아웃</button>' +
+      '</div>';
+    }
+    return '<div class="auth-card" style="margin-top:2px">' +
+      '<div class="auth-card-head">' + KAKAO_ICON + '카카오로 3초 시작하기</div>' +
+      '<p>카카오로 로그인하면 기기·브라우저를 바꿔도 내 21일 기록이 저절로 이어집니다.</p>' +
+      '<button class="btn btn-kakao" id="setKakaoLogin" type="button">' + KAKAO_ICON + '카카오로 3초 시작하기</button>' +
+    '</div>';
+  }
+
+  function bindAuth(){
+    var box = $('#authCard');
+    if(box){
+      box.addEventListener('click', function(e){
+        var b = e.target.closest('#btnKakaoLogin');
+        if(!b) return;
+        b.disabled = true;
+        b.textContent = '카카오로 이동 중…';
+        Cloud.signInKakao().then(function(ok){
+          if(!ok){ b.disabled = false; renderAuthCard(); }
+        });
+      });
+    }
   }
 
   /* ================= 날짜 ================= */
@@ -1600,7 +1822,12 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
 
     var nick = (state.nickname || '').trim();
     $('#heroName').textContent = nick || '닉네임 설정';
-    $('#heroAvatar').textContent = nick ? Array.from(nick)[0] : '🌿';
+    var heroPic = Cloud.isReady() ? Cloud.profile().photo : '';
+    if(heroPic){
+      $('#heroAvatar').innerHTML = '<img src="' + esc(heroPic) + '" alt="" style="width:100%;height:100%;object-fit:cover;display:block">';
+    } else {
+      $('#heroAvatar').textContent = nick ? Array.from(nick)[0] : '🌿';
+    }
     $('#heroDate').textContent = fmtKo(tk) + (inRange ? ' · 오늘' : '');
 
     var done = countDone();
@@ -1916,6 +2143,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     renderToday();
     renderCalendar();
     renderFeed();
+    renderAuthCard();
     if(currentTab === 'chat') renderChat();
   }
 
@@ -2232,7 +2460,8 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       '<div class="sheet-head"><div class="sheet-title"><h3>설정</h3></div>' +
       '<button class="icon-btn" data-close aria-label="닫기">✕</button></div>' +
       '<label class="field"><span>닉네임</span><input id="setNick" maxlength="20" value="' + esc(state.nickname) + '" placeholder="예: 정종범"></label>' +
-      '<label class="field"><span>챌린지 시작일</span><input id="setStart" type="date" value="' + esc(state.startDate) + '"></label>' +
+      '<div style="margin-top:12px">' + authSettingsHtml() + '</div>' +
+      '<label class="field" style="margin-top:14px"><span>챌린지 시작일</span><input id="setStart" type="date" value="' + esc(state.startDate) + '"></label>' +
       '<p class="field-hint">시작일을 바꾸면 Day 번호와 달력이 다시 계산됩니다. 날짜별 기록은 그대로 남아요.</p>' +
       '<div class="stat-line">저장 공간 사용량 <strong id="setUsage">' + usageText() + '</strong> · ' + (Cloud.isReady() ? '실시간 공유 중' : '내 기기 저장') + '</div>' +
       '<div class="sheet-actions"><button class="btn btn-primary" id="setSave" style="margin-top:0">저장</button></div>' +
@@ -2244,8 +2473,24 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       '<input type="file" id="setImportFile" accept="application/json,.json" hidden>' +
       '<p class="field-hint">※ 이미 올린 인증샷은 서버에 남아 함께 인증샷 탭에 계속 보입니다.</p>' +
       '<button class="btn btn-danger-ghost" id="setReset">모든 기록 초기화</button>' +
-      '<p class="foot">21일 트리플챌린지 · v2.6 (실시간 채팅 · 오일·제품 안내)<br>기록은 내 폰에 저장되고, 인증샷은 함께 인증샷 탭에서 회원들과 실시간 공유됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
+      '<p class="foot">21일 트리플챌린지 · v3.0 (카카오 로그인 · 실시간 채팅 · 오일·제품 안내)<br>기록은 카카오 로그인 시 계정에, 로그인 전에는 내 폰에 저장됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
       function(card){
+        var kb = $('#setKakaoLogin', card);
+        if(kb) kb.addEventListener('click', function(){
+          kb.disabled = true;
+          kb.textContent = '카카오로 이동 중…';
+          Cloud.signInKakao().then(function(ok){ if(!ok){ kb.disabled = false; } });
+        });
+        var lo = $('#setLogout', card);
+        if(lo) lo.addEventListener('click', function(){
+          lo.disabled = true;
+          lo.textContent = '로그아웃 중…';
+          Cloud.signOut().then(function(){
+            closeSheet();
+            renderAll();
+            toast('로그아웃했어요. 기록은 이 기기에 남아 있어요.');
+          });
+        });
         $('#setSave', card).addEventListener('click', function(){
           var nick = ($('#setNick', card).value || '').trim().slice(0, 20);
           var start = $('#setStart', card).value;
@@ -2568,6 +2813,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
   bindEvents();
   bindChat();
   bindNotice();
+  bindAuth();
   initTodayPhoto();
   lastComplete = complete(todayKey());
   renderAll();
