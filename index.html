@@ -1932,6 +1932,15 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     if(!Cloud.isReady() || photoRetrying) return Promise.resolve(false);
     clearTimeout(photoRetryTimer);
     return new Promise(function(ok){ photoRetryTimer = setTimeout(ok, delay || 0); }).then(function(){
+      /* v3.0에서 사진만 조용히 실패해 기기에만 남은 경우(오늘)도 찾아서 다시 올린다 */
+      var tk0 = todayKey();
+      var mine = (Cloud.feedItems() || []).filter(function(it){
+        return it.user_key === Cloud.userKey() && String(it.date_str || '') === tk0;
+      })[0];
+      if(mine && !mine.photo_url){
+        var lp = getPhoto(tk0);
+        if(lp && String(lp).indexOf('data:') === 0) markPhotoPending(tk0, true);
+      }
       var keys = Object.keys(state.days || {}).filter(function(k){
         var r = state.days[k];
         return r && r.pendingPhoto;
