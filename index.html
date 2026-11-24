@@ -1084,6 +1084,12 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       return m ? m.slice(0, 80) : '알 수 없는 오류';
     }
 
+    /* 잠깐 끊긴 것뿐인 오류인지 — 이런 것만 한 번 더 시도한다 */
+    function isTransientError(e){
+      var m = String((e && (e.message || e.error_description || e.statusCode || e.status)) || e || '');
+      return /Failed to fetch|NetworkError|Load failed|network|timeout|timed out|\b(5\d\d)\b/i.test(m);
+    }
+
     /* 사진은 공개 버킷 shots 의 public/<내키>/ 폴더에 jpg 로 올린다.
        v3.1: 로그인(authenticated) 상태에서도 올라가도록 정책을 고쳤고, 일시적 실패는 한 번 더 시도한다. */
     function uploadPhoto(key, dataUrl, attempt){
@@ -1094,7 +1100,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       var path = 'public/' + userKey() + '/' + key + '-' + Date.now() + (attempt > 1 ? '-' + attempt : '') + '.jpg';
       var blob = dataUrlToBlob(dataUrl);
       var bucket = client.storage.from(CLOUD.bucket);
-      return bucket.upload(path, blob, {contentType: 'image/jpeg', upsert: true})
+      return bucket.upload(path, blob, {contentType: 'image/jpeg'})
         .then(function(res){
           if(res && res.error) throw res.error;
           var pub = bucket.getPublicUrl(path);
@@ -1103,7 +1109,8 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
           return url;
         })
         .catch(function(e){
-          if(attempt < 2){
+          /* 일시적인 네트워크 오류만 한 번 더 시도한다(권한 오류는 재시도 무의미) */
+          if(attempt < 2 && isTransientError(e)){
             return new Promise(function(ok){ setTimeout(ok, 700); })
               .then(function(){ return uploadPhoto(key, dataUrl, attempt + 1); });
           }
