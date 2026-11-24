@@ -707,7 +707,7 @@ main{padding-top:6px}
     renderDash();
     renderMembers();
     renderShots();
-    renderChatAdmin();
+    if(!$('#tab-chat').hidden){ try{ renderChatAdmin(); }catch(e){ console.warn('[admin] 채팅 렌더 실패', e); } }
     renderSettings();
   }
 
@@ -1113,7 +1113,7 @@ main{padding-top:6px}
       });
       if(tab === 'settings') renderSettings();
       if(tab === 'shots') renderShots();
-      if(tab === 'chat') renderChatAdmin();
+      if(tab === 'chat'){ try{ renderChatAdmin(); }catch(e){ console.warn('[admin] 채팅 렌더 실패', e); toast('채팅을 표시하지 못했습니다'); } }
     });
   });
 
