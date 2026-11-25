@@ -76,6 +76,12 @@ button,input,textarea{font-family:inherit}
 .icon-btn{width:40px;height:40px;flex:0 0 auto;border-radius:12px;border:1.5px solid var(--line);background:#fff;color:var(--ink-2);display:grid;place-items:center;cursor:pointer;transition:.15s}
 .icon-btn:active{transform:scale(.94);background:var(--mint-soft)}
 .icon-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.appbar-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+#btnRefresh{color:var(--mint-dark);border-color:rgba(12,143,110,.28)}
+#btnRefresh .refresh-glyph{display:block;font-size:21px;line-height:1;font-weight:800;transform-origin:50% 50%;-webkit-transform-origin:50% 50%}
+#btnRefresh.spinning .refresh-glyph{animation:spin .7s linear infinite}
+#btnRefresh.busy{pointer-events:none}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 /* ---------- layout ---------- */
 main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
@@ -474,9 +480,14 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
         <p>이오메가 리퀴드 · 레몬 · 포스티엠</p>
       </div>
     </div>
+    <div class="appbar-actions">
+    <button class="icon-btn" id="btnRefresh" type="button" aria-label="새로고침" title="새로고침">
+      <span class="refresh-glyph" aria-hidden="true">↻</span>
+    </button>
     <button class="icon-btn" id="btnSettings" aria-label="설정 열기">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.98a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.62a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9v.09a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51.91Z"/></svg>
     </button>
+    </div>
   </header>
 
   <div class="notice-banner" id="noticeBanner" hidden>
@@ -2872,7 +2883,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       '<input type="file" id="setImportFile" accept="application/json,.json" hidden>' +
       '<p class="field-hint">※ 이미 올린 인증샷은 서버에 남아 함께 인증샷 탭에 계속 보입니다.</p>' +
       '<button class="btn btn-danger-ghost" id="setReset">모든 기록 초기화</button>' +
-      '<p class="foot">21일 트리플챌린지 · v3.2 (함께 인증샷 댓글 · 사진 업로드 수정 · 카카오 로그인 · 실시간 채팅)<br>기록은 카카오 로그인 시 계정에, 로그인 전에는 내 폰에 저장됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
+      '<p class="foot">21일 트리플챌린지 · v3.3 (새로고침 버튼 · 함께 인증샷 댓글 · 사진 업로드 수정 · 카카오 로그인 · 실시간 채팅)<br>기록은 카카오 로그인 시 계정에, 로그인 전에는 내 폰에 저장됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
       function(card){
         var kb = $('#setKakaoLogin', card);
         if(kb) kb.addEventListener('click', function(){
@@ -3043,6 +3054,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     });
 
     $('#btnSettings').addEventListener('click', openSettings);
+    $('#btnRefresh').addEventListener('click', refreshApp);
     $('#btnName').addEventListener('click', openSettings);
     $('#btnEditStart').addEventListener('click', openSettings);
     $('#btnServerInfo').addEventListener('click', openServerInfo);
@@ -3278,6 +3290,74 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
         state = loadMeta();
         renderAll();
       }
+    });
+  }
+
+  /* ================= 새로고침 (v3.3) ================= */
+  /* 서비스워커를 갱신하고 옛 캐시만 지운 뒤 새로 불러온다.
+     localStorage(개인 체크 기록·카카오 로그인 토큰)는 절대 지우지 않는다. */
+  var refreshing = false;
+
+  function freshCacheName(){
+    return fetch('sw.js', {cache:'no-store'}).then(function(r){ return r.text(); }).then(function(txt){
+      var m = txt.match(/CACHE\s*=\s*'([^']+)'/);
+      return m ? m[1] : '';
+    }).catch(function(){ return ''; });
+  }
+
+  function waitForNewWorker(reg){
+    if(!reg) return Promise.resolve();
+    var w = reg.waiting || reg.installing;
+    if(!w) return Promise.resolve();
+    return new Promise(function(resolve){
+      var done = false;
+      var finish = function(){ if(done) return; done = true; resolve(); };
+      w.addEventListener('statechange', function(){
+        if(w.state === 'activated' || w.state === 'redundant') finish();
+      });
+      setTimeout(finish, 1500);
+    });
+  }
+
+  function refreshApp(){
+    if(refreshing) return;
+    refreshing = true;
+    var btn = $('#btnRefresh');
+    if(btn){ btn.classList.add('spinning'); btn.classList.add('busy'); btn.setAttribute('aria-busy', 'true'); }
+    vibrate(10);
+
+    var started = Date.now();
+    var newCache = '';
+
+    var step = Promise.resolve();
+    if('serviceWorker' in navigator){
+      step = freshCacheName().then(function(name){
+        newCache = name;
+        var getReg = navigator.serviceWorker.getRegistration
+          ? navigator.serviceWorker.getRegistration()
+          : Promise.resolve(null);
+        return getReg.catch(function(){ return null; });
+      }).then(function(reg){
+        if(!reg || !reg.update) return null;
+        return reg.update().then(function(){ return reg; }).catch(function(){ return reg; });
+      }).then(waitForNewWorker).catch(function(){});
+    }
+
+    /* 서비스워커·캐시 응답이 느려도 3초 안에는 반드시 새로 불러온다 */
+    step = Promise.race([step, new Promise(function(resolve){ setTimeout(resolve, 3000); })]);
+
+    step.then(function(){
+      if(!window.caches || !caches.keys) return null;
+      return caches.keys().then(function(keys){
+        var olds = keys.filter(function(k){
+          return k.indexOf('triple21-') === 0 && k !== newCache;
+        });
+        return Promise.all(olds.map(function(k){ return caches.delete(k).catch(function(){}); }));
+      }).catch(function(){});
+    }).then(function(){
+      /* 아이콘이 한 바퀴 도는 것을 눈으로 확인할 수 있게 아주 잠깐 뒤 새로고침 */
+      var wait = Math.max(0, 650 - (Date.now() - started));
+      setTimeout(function(){ window.location.reload(); }, wait);
     });
   }
 
