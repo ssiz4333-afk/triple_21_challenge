@@ -185,7 +185,12 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
 .btn-kakao svg{fill:#3A2A00;stroke:none}
 .btn-ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line);box-shadow:none}
 .btn-danger-ghost{background:#FFF6F5;color:#C33A2C;border:1.5px solid #F6D3CE;box-shadow:none;margin-top:10px;font-size:13.5px;padding:13px}
-.share-block{margin-top:16px}
+/* ---------- v3.4: 1·2단계 버튼(같은 폭·높이) ---------- */
+.btn-step{min-height:54px}
+.step-badge{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12.5px;font-weight:900;line-height:1;letter-spacing:0;flex:0 0 auto}
+.btn-primary .step-badge{background:#fff;color:var(--mint-dark);box-shadow:0 2px 6px rgba(6,80,60,.2)}
+.btn-kakao .step-badge{background:#fff;color:#3A2A00;box-shadow:0 2px 6px rgba(140,105,0,.22)}
+.share-block{margin-top:10px}
 /* ---------- kakao login ---------- */
 .auth-card{margin-top:14px;padding:14px;border-radius:20px;background:#fff;border:1.5px solid #F3E6B4;box-shadow:0 10px 24px rgba(19,60,46,.07)}
 .auth-card.is-on{border-color:#DCEFE6;box-shadow:0 6px 16px rgba(19,60,46,.05)}
@@ -565,15 +570,16 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
         <label class="memo-label" for="memoInput">한 줄 소감</label>
         <input class="memo-input" id="memoInput" type="text" maxlength="120" placeholder="예: 오늘도 상쾌하게 완료했습니다!">
         <p class="hint" style="text-align:left;margin-top:8px">체크는 바로 저장돼요. 사진과 소감은 <b>오늘 인증 저장</b>을 눌러 주세요.</p>
-        <button class="btn btn-primary" id="btnSaveToday">오늘 인증 저장</button>
-      </div>
+        <button class="btn btn-primary btn-step" id="btnSaveToday"><span class="step-badge" aria-hidden="true">1</span><span id="saveBtnLabel">오늘 인증 저장</span></button>
 
-      <div class="share-block">
-        <button class="btn btn-kakao" id="btnShare">
-          <svg viewBox="0 0 24 24"><path d="M12 3.8c-4.6 0-8.3 2.9-8.3 6.5 0 2.3 1.4 4.3 3.6 5.6l-.9 3.2c-.1.4.3.7.6.5l3.6-2.3c.5.1 1 .1 1.4.1 4.6 0 8.3-2.9 8.3-6.5S16.6 3.8 12 3.8Z"/></svg>
-          카카오톡으로 오늘 인증 공유하기
-        </button>
-        <p class="hint">휴대폰에서는 공유 창이 열려 카카오톡을 고를 수 있고, PC에서는 인증 문구가 복사돼요.</p>
+        <div class="share-block">
+          <button class="btn btn-kakao btn-step" id="btnShare">
+            <span class="step-badge" aria-hidden="true">2</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.8c-4.6 0-8.3 2.9-8.3 6.5 0 2.3 1.4 4.3 3.6 5.6l-.9 3.2c-.1.4.3.7.6.5l3.6-2.3c.5.1 1 .1 1.4.1 4.6 0 8.3-2.9 8.3-6.5S16.6 3.8 12 3.8Z"/></svg>
+            카카오톡으로 오늘 인증 공유하기
+          </button>
+          <p class="hint">휴대폰에서는 공유 창이 열려 카카오톡을 고를 수 있고, PC에서는 인증 문구가 복사돼요.</p>
+        </div>
       </div>
 
       <div class="card tip-card" id="installTip" hidden>
@@ -1127,6 +1133,12 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
             }
             if(nx !== !!cur.x || nl !== !!cur.l || np !== !!cur.p || memo !== (cur.memo || '')){
               cur.x = nx; cur.l = nl; cur.p = np; cur.memo = memo;
+              state.days[key] = cur;
+              changed = true;
+            }
+            /* v3.4: 다른 기기에서 저장한 기록도 '저장됨'으로 인정 */
+            if(r.updated_at && !cur.savedAt){
+              cur.savedAt = r.updated_at;
               state.days[key] = cur;
               changed = true;
             }
@@ -2883,7 +2895,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       '<input type="file" id="setImportFile" accept="application/json,.json" hidden>' +
       '<p class="field-hint">※ 이미 올린 인증샷은 서버에 남아 함께 인증샷 탭에 계속 보입니다.</p>' +
       '<button class="btn btn-danger-ghost" id="setReset">모든 기록 초기화</button>' +
-      '<p class="foot">21일 트리플챌린지 · v3.3 (새로고침 버튼 · 함께 인증샷 댓글 · 사진 업로드 수정 · 카카오 로그인 · 실시간 채팅)<br>기록은 카카오 로그인 시 계정에, 로그인 전에는 내 폰에 저장됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
+      '<p class="foot">21일 트리플챌린지 · v3.4 (1·2단계 저장·공유 버튼 정렬 · 새로고침 버튼 · 함께 인증샷 댓글 · 사진 업로드 수정 · 카카오 로그인 · 실시간 채팅)<br>기록은 카카오 로그인 시 계정에, 로그인 전에는 내 폰에 저장됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
       function(card){
         var kb = $('#setKakaoLogin', card);
         if(kb) kb.addEventListener('click', function(){
@@ -3100,8 +3112,11 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
         toast('체크나 인증샷을 먼저 남겨 주세요');
         return;
       }
+      /* v3.4: 1번(저장)을 마쳤다는 표시 — 2번(공유)은 이 표시가 있어야 열린다 */
+      rec.savedAt = new Date().toISOString();
       var metaOk = saveMeta();
       renderAll();
+      if(!metaOk) delete rec.savedAt;
       if(photoFailed || !metaOk){
         if(photoEdit.draft) todayPhotoBlock.set(photoEdit.draft, true);
         toast(photoFailed
@@ -3115,19 +3130,19 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       var btn = $('#btnSaveToday');
       if(!Cloud.isReady()){
         toast('오늘 인증을 기기에 저장했어요. 서버 연결 전이라 다음에 함께 인증샷에 올라갑니다.');
-        btn.textContent = '저장됨 ✓';
-        setTimeout(function(){ btn.textContent = '오늘 인증 저장'; }, 1600);
+        setSaveLabel('저장됨 ✓');
+        setTimeout(function(){ setSaveLabel('오늘 인증 저장'); }, 1600);
         return;
       }
       /* v3.1: 서버 저장·사진 업로드 결과를 실제로 확인해서 알려준다 */
       btn.disabled = true;
-      btn.textContent = cloudPhoto ? '사진 올리는 중…' : '올리는 중…';
+      setSaveLabel(cloudPhoto ? '사진 올리는 중…' : '올리는 중…');
       Cloud.pushCheckin(tk, {photoDataUrl: cloudPhoto || null, removePhoto: (!cloudPhoto && cloudRemove)})
         .then(function(r){
           btn.disabled = false;
           if(r && r.ok){
-            btn.textContent = '저장됨 ✓';
-            setTimeout(function(){ btn.textContent = '오늘 인증 저장'; }, 1600);
+            setSaveLabel('저장됨 ✓');
+            setTimeout(function(){ setSaveLabel('오늘 인증 저장'); }, 1600);
             if(r.photoFailed){
               markPhotoPending(tk, true);
               toast('기록은 함께 인증샷에 올라갔지만 사진은 올리지 못했어요(' + (r.error || '오류') + '). 잠시 뒤 자동으로 다시 시도합니다.');
@@ -3135,19 +3150,44 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
               toast('오늘 인증을 저장했어요! 함께 인증샷에 올라갔어요.');
             }
           } else {
-            btn.textContent = '오늘 인증 저장';
+            setSaveLabel('오늘 인증 저장');
             markPhotoPending(tk, !!cloudPhoto);
             toast('서버에 올리지 못했어요(' + ((r && r.error) || '연결 오류') + '). 기기에는 저장했으니 잠시 뒤 다시 저장해 주세요.');
           }
         })
         .catch(function(){
           btn.disabled = false;
-          btn.textContent = '오늘 인증 저장';
+          setSaveLabel('오늘 인증 저장');
           toast('서버에 올리지 못했어요. 기기에는 저장했으니 잠시 뒤 다시 저장해 주세요.');
         });
     });
 
-    $('#btnShare').addEventListener('click', function(){ shareDay(todayKey()); });
+    /* v3.4: 저장 버튼 문구를 바꿔도 1번 배지는 남도록 라벨만 교체한다 */
+    function setSaveLabel(t){
+      var el = $('#saveBtnLabel');
+      if(el) el.textContent = t;
+      else $('#btnSaveToday').textContent = t;
+    }
+
+    /* v3.4: 2번(공유)은 1번(저장)을 먼저 눌러야 동작한다 */
+    function needsSaveFirst(key){
+      if(photoEdit.draft || photoEdit.remove) return true;   /* 사진 변경이 아직 저장 전 */
+      var rec = peek(key);
+      if(!rec || !rec.savedAt) return true;                  /* 오늘 저장된 인증이 아직 없음 */
+      var memoNow = (($('#memoInput').value || '').trim()).slice(0, 120);
+      return memoNow !== (rec.memo || '');                   /* 소감을 고치고 저장하지 않음 */
+    }
+
+    $('#btnShare').addEventListener('click', function(){
+      var tk = todayKey();
+      var n = dayNum(tk);
+      if(n >= 1 && n <= TOTAL && needsSaveFirst(tk)){
+        toast('먼저 1번 오늘 인증 저장을 눌러 주세요!');
+        vibrate(20);
+        return;
+      }
+      shareDay(tk);
+    });
 
     var tipOpen = $('#tipOpen');
     if(tipOpen){
