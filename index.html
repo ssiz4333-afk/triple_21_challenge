@@ -1825,55 +1825,91 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     ctx.restore();
   }
 
+  /* v3.5: 타임스탬프 배지를 이전(v3.4)보다 약 1.5배 키우고 다크 캡슐을 진하게 해 가독성을 올린다.
+     사진 폭의 80%·높이의 55%를 넘지 않게 상한을 두어 어떤 비율에서도 우측 하단에 깔끔히 놓는다. */
   function drawDateStamp(ctx, w, h, stamp){
     var t = stampTextOf(stamp);
     if(!t) return;
-    var f1 = Math.max(12, Math.round(w * 0.030));      /* 날짜 줄 */
-    var f2 = Math.max(9, Math.round(w * 0.0172));      /* Day 줄 */
-    var gap = Math.max(3, Math.round(f1 * 0.22));
-    var padX = Math.round(f1 * 0.76);
-    var padY = Math.round(f1 * 0.50);
-    var icon = Math.round(f1 * 1.02);
-    var iconGap = Math.round(f1 * 0.48);
+    var BASE_F1 = Math.max(14, Math.round(w * 0.0450));   /* 날짜 줄 (v3.4: 0.0300 → 1.5배) */
+    var BASE_F2 = Math.max(10, Math.round(w * 0.0258));   /* Day 줄 (v3.4: 0.0172 → 1.5배) */
+
+    /* k배로 줄여 그린 경우에도 같은 비율이 유지되도록 배치값을 한 번에 계산한다 */
+    function layout(k){
+      var f1 = Math.max(9, Math.round(BASE_F1 * k));
+      var f2 = Math.max(7, Math.round(BASE_F2 * k));
+      var gap = Math.max(3, Math.round(f1 * 0.22));
+      var padX = Math.round(f1 * 0.76);
+      var padY = Math.round(f1 * 0.50);
+      var icon = Math.round(f1 * 1.02);
+      var iconGap = Math.round(f1 * 0.48);
+      ctx.font = '800 ' + f1 + 'px ' + STAMP_FONT_STACK;
+      var w1 = ctx.measureText(t.date).width;
+      ctx.font = '700 ' + f2 + 'px ' + STAMP_FONT_STACK;
+      var w2 = ctx.measureText(t.sub).width;
+      var textW = Math.max(w1, w2);
+      var textH = f1 + gap + f2;
+      var bw = padX * 2 + icon + iconGap + Math.ceil(textW);
+      var bh = Math.max(textH + padY * 2, icon + padY * 2);
+      return {f1:f1, f2:f2, gap:gap, padX:padX, padY:padY, icon:icon, iconGap:iconGap,
+              textW:textW, textH:textH, bw:bw, bh:bh};
+    }
+
+    var MAX_W = w * 0.80;   /* 가로 상한 — 피사체를 너무 가리지 않게 */
+    var MAX_H = h * 0.55;   /* 세로 상한 — 납작한 가로 사진 대비 */
+    var L = layout(1);
+    var k = 1;
+    if(L.bw > MAX_W) k = Math.min(k, MAX_W / L.bw);
+    if(L.bh > MAX_H) k = Math.min(k, MAX_H / L.bh);
+    if(k < 1) L = layout(k);
+
+    var bw = L.bw, bh = L.bh, f1 = L.f1, f2 = L.f2, gap = L.gap, padX = L.padX, icon = L.icon, iconGap = L.iconGap;
+    var textH = L.textH;
+    var margin = Math.round(w * 0.030);
+    var x = Math.round(w - margin - bw);
+    var y = Math.round(h - margin - bh);
+    if(x < 2 || y < 2 || bw > w * 0.92 || bh > h * 0.72) return; /* 너무 작은 사진에서는 생략 */
+    var radius = Math.round(bh * 0.30);
+
     ctx.save();
     ctx.textBaseline = 'top';
-    ctx.font = '800 ' + f1 + 'px ' + STAMP_FONT_STACK;
-    var w1 = ctx.measureText(t.date).width;
-    ctx.font = '700 ' + f2 + 'px ' + STAMP_FONT_STACK;
-    var w2 = ctx.measureText(t.sub).width;
-    var textW = Math.max(w1, w2);
-    var textH = f1 + gap + f2;
-    var bw = padX * 2 + icon + iconGap + Math.ceil(textW);
-    var bh = Math.max(textH + padY * 2, icon + padY * 2);
-    var margin = Math.round(w * 0.028);
-    var x = w - margin - bw;
-    var y = h - margin - bh;
-    if(x < 2 || y < 2 || bw > w * 0.9) return; /* 너무 작은 사진에서는 생략 */
-    var radius = Math.round(bh * 0.30);
-    /* 반투명 다크 배지 + 그림자 */
+    /* 반투명 다크 캡슐 + 그림자 — 어두운 사진에서도 배지 경계가 보이게 */
     ctx.save();
-    ctx.shadowColor = 'rgba(0,0,0,.42)';
-    ctx.shadowBlur = Math.round(f1 * 0.8);
-    ctx.shadowOffsetY = Math.round(f1 * 0.14);
+    ctx.shadowColor = 'rgba(0,0,0,.48)';
+    ctx.shadowBlur = Math.round(f1 * 0.85);
+    ctx.shadowOffsetY = Math.round(f1 * 0.16);
     stampRoundRect(ctx, x, y, bw, bh, radius);
-    ctx.fillStyle = 'rgba(9,26,21,.60)';
+    ctx.fillStyle = 'rgba(12,21,17,.74)';
     ctx.fill();
     ctx.restore();
+    /* 위쪽이 살짝 밝은 그라데이션 — 캡슐이 평평해 보이지 않게 */
+    var grad = ctx.createLinearGradient(x, y, x, y + bh);
+    grad.addColorStop(0, 'rgba(255,255,255,.10)');
+    grad.addColorStop(0.55, 'rgba(255,255,255,.02)');
+    grad.addColorStop(1, 'rgba(0,0,0,.10)');
     stampRoundRect(ctx, x, y, bw, bh, radius);
-    ctx.strokeStyle = 'rgba(255,255,255,.24)';
-    ctx.lineWidth = Math.max(1, w * 0.0018);
+    ctx.fillStyle = grad;
+    ctx.fill();
+    /* 테두리 */
+    stampRoundRect(ctx, x, y, bw, bh, radius);
+    ctx.strokeStyle = 'rgba(255,255,255,.34)';
+    ctx.lineWidth = Math.max(1, w * 0.0022);
     ctx.stroke();
-    /* 작은 잎 아이콘 */
+    /* 잎 아이콘 */
     stampLeaf(ctx, x + padX + icon / 2, y + bh / 2, icon);
     /* 날짜 + Day */
     var tx = x + padX + icon + iconGap;
-    var ty = y + (bh - textH) / 2;
+    var ty = Math.round(y + (bh - textH) / 2);
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,.55)';
+    ctx.shadowBlur = Math.round(f1 * 0.22);
+    ctx.shadowOffsetY = Math.round(f1 * 0.05);
     ctx.font = '800 ' + f1 + 'px ' + STAMP_FONT_STACK;
     ctx.fillStyle = '#FFFFFF';
     ctx.fillText(t.date, tx, ty);
     ctx.font = '700 ' + f2 + 'px ' + STAMP_FONT_STACK;
-    ctx.fillStyle = '#9BEBCE';
+    ctx.fillStyle = '#A8F2D8';
     ctx.fillText(t.sub, tx, ty + f1 + gap);
+    ctx.restore();
     ctx.restore();
   }
 
@@ -2895,7 +2931,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       '<input type="file" id="setImportFile" accept="application/json,.json" hidden>' +
       '<p class="field-hint">※ 이미 올린 인증샷은 서버에 남아 함께 인증샷 탭에 계속 보입니다.</p>' +
       '<button class="btn btn-danger-ghost" id="setReset">모든 기록 초기화</button>' +
-      '<p class="foot">21일 트리플챌린지 · v3.4 (1·2단계 저장·공유 버튼 정렬 · 새로고침 버튼 · 함께 인증샷 댓글 · 사진 업로드 수정 · 카카오 로그인 · 실시간 채팅)<br>기록은 카카오 로그인 시 계정에, 로그인 전에는 내 폰에 저장됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
+      '<p class="foot">21일 트리플챌린지 · v3.5 (인증샷 타임스탬프 확대·가독성 · 1·2단계 저장·공유 버튼 정렬 · 새로고침 버튼 · 함께 인증샷 댓글 · 사진 업로드 수정 · 카카오 로그인 · 실시간 채팅)<br>기록은 카카오 로그인 시 계정에, 로그인 전에는 내 폰에 저장됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
       function(card){
         var kb = $('#setKakaoLogin', card);
         if(kb) kb.addEventListener('click', function(){

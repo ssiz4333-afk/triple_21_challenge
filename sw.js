@@ -3,7 +3,7 @@
    - 네트워크 우선: 항상 최신 앱을 먼저 받아오고, 끊겼을 때만 캐시로 대체
    - 관리자 페이지(admin.html)는 캐시하지 않습니다.
 */
-const CACHE = 'triple21-v3.4.0';
+const CACHE = 'triple21-v3.5.0';
 const ASSETS = [
   './',
   './index.html',
