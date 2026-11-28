@@ -81,6 +81,17 @@ button,input,textarea{font-family:inherit}
 #btnRefresh .refresh-glyph{display:block;font-size:21px;line-height:1;font-weight:800;transform-origin:50% 50%;-webkit-transform-origin:50% 50%}
 #btnRefresh.spinning .refresh-glyph{animation:spin .7s linear infinite}
 #btnRefresh.busy{pointer-events:none}
+/* v3.7: 버튼이 세 개가 되어도 제목이 잘리거나 줄바꿈되지 않게 좁은 화면에서 간격·크기를 줄인다 */
+.brand-text h1{overflow:hidden;text-overflow:ellipsis}
+@media (max-width:380px){
+  .appbar{gap:8px;padding-left:14px;padding-right:14px}
+  .appbar-actions{gap:6px}
+  .appbar-actions .icon-btn{width:36px;height:36px;border-radius:11px}
+  .brand{gap:8px}
+  .brand-logo{width:34px;height:34px;border-radius:11px}
+  .brand-text h1{font-size:15px}
+  .brand-text p{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ---------- layout ---------- */
@@ -531,6 +542,9 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       </div>
     </div>
     <div class="appbar-actions">
+    <button class="icon-btn" id="btnShareApp" type="button" aria-label="앱 공유하기" title="앱 공유하기">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.2V3.6"/><path d="M8.2 7.4 12 3.6l3.8 3.8"/><path d="M5.2 11.4v7.4a2 2 0 0 0 2 2h9.6a2 2 0 0 0 2-2v-7.4"/></svg>
+    </button>
     <button class="icon-btn" id="btnRefresh" type="button" aria-label="새로고침" title="새로고침">
       <span class="refresh-glyph" aria-hidden="true">↻</span>
     </button>
@@ -3008,6 +3022,33 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     });
   }
 
+  /* ================= 앱 초대 링크 공유 (v3.7) ================= */
+  /* 헤더의 공유 버튼과 설정 시트의 '앱 초대 링크 공유하기'가 함께 쓴다.
+     휴대폰에서는 navigator.share로 카톡·문자 등 네이티브 공유 시트를 열고,
+     PC처럼 공유를 지원하지 않는 환경에서는 라이브 주소를 클립보드에 복사한다. */
+  var APP_SHARE_URL = 'https://ssiz4333-afk.github.io/triple_21_challenge/';
+  var APP_SHARE_TITLE = '21일 트리플챌린지';
+  var APP_SHARE_TEXT = '이오메가 리퀴드 · 레몬 · 포스티엠, 21일 트리플챌린지 함께해요!';
+
+  function shareAppLink(){
+    vibrate(10);
+    var copyFallback = function(){
+      copyText(APP_SHARE_URL).then(function(ok){
+        toast(ok ? '앱 초대 링크를 복사했어요! 카톡에 붙여넣어 보세요' : '복사에 실패했어요. 주소를 길게 눌러 복사해 주세요');
+      });
+    };
+    if(navigator.share){
+      try{
+        navigator.share({title: APP_SHARE_TITLE, text: APP_SHARE_TEXT, url: APP_SHARE_URL}).catch(function(err){
+          if(err && err.name === 'AbortError') return;   /* 사용자가 공유를 취소한 경우 */
+          copyFallback();
+        });
+      }catch(e){ copyFallback(); }
+    } else {
+      copyFallback();
+    }
+  }
+
   /* ================= 날짜 상세 시트 ================= */
   function toggleRowHTML(it, on, disabled){
     return '<button type="button" class="toggle-row' + (on ? ' on' : '') + '" data-tk="' + it.k + '" aria-pressed="' + (on ? 'true' : 'false') + '"' + (disabled ? ' disabled' : '') + '>' +
@@ -3250,7 +3291,8 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       '<p class="field-hint">시작일을 바꾸면 Day 번호와 달력이 다시 계산됩니다. 날짜별 기록은 그대로 남아요.</p>' +
       '<div class="stat-line">저장 공간 사용량 <strong id="setUsage">' + usageText() + '</strong> · ' + (Cloud.isReady() ? '실시간 공유 중' : '내 기기 저장') + '</div>' +
       '<div class="sheet-actions"><button class="btn btn-primary" id="setSave" style="margin-top:0">저장</button></div>' +
-      '<button class="btn btn-ghost" id="setInstall" style="margin-top:12px">📲 바탕화면 앱으로 추가하기</button>' +
+      '<button class="btn btn-ghost" id="setShareApp" style="margin-top:12px">🔗 앱 초대 링크 공유하기</button>' +
+      '<button class="btn btn-ghost" id="setInstall" style="margin-top:8px">📲 바탕화면 앱으로 추가하기</button>' +
       '<div class="sheet-row">' +
         '<button class="btn btn-ghost" id="setExport">기록 백업</button>' +
         '<button class="btn btn-ghost" id="setImport">백업 불러오기</button>' +
@@ -3258,7 +3300,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       '<input type="file" id="setImportFile" accept="application/json,.json" hidden>' +
       '<p class="field-hint">※ 이미 올린 인증샷은 서버에 남아 함께 인증샷 탭에 계속 보입니다.</p>' +
       '<button class="btn btn-danger-ghost" id="setReset">모든 기록 초기화</button>' +
-      '<p class="foot">21일 트리플챌린지 · v3.6 (인증샷 타임스탬프 프레임 안 보정 · 21일+3일 여유 기간 · 21일 완주 팡파레 · 새 기수 전체 리셋 연동 · 함께 인증샷 댓글 · 카카오 로그인 · 실시간 채팅)<br>기록은 카카오 로그인 시 계정에, 로그인 전에는 내 폰에 저장됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
+      '<p class="foot">21일 트리플챌린지 · v3.7 (앱 초대 링크 공유 · 인증샷 타임스탬프 프레임 안 보정 · 21일+3일 여유 기간 · 21일 완주 팡파레 · 새 기수 전체 리셋 연동 · 함께 인증샷 댓글 · 카카오 로그인 · 실시간 채팅)<br>기록은 카카오 로그인 시 계정에, 로그인 전에는 내 폰에 저장됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
       function(card){
         var kb = $('#setKakaoLogin', card);
         if(kb) kb.addEventListener('click', function(){
@@ -3293,6 +3335,8 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
           renderAll();
           toast('설정을 저장했어요');
         });
+
+        $('#setShareApp', card).addEventListener('click', shareAppLink);
 
         $('#setInstall', card).addEventListener('click', function(){
           closeSheet();
@@ -3433,6 +3477,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
 
     $('#btnSettings').addEventListener('click', openSettings);
     $('#btnRefresh').addEventListener('click', refreshApp);
+    $('#btnShareApp').addEventListener('click', shareAppLink);
     $('#btnName').addEventListener('click', openSettings);
     $('#btnEditStart').addEventListener('click', openSettings);
 
