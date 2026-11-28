@@ -183,6 +183,19 @@ main{padding-top:6px}
   .mrow .chev{display:none}
   .kpi-value{font-size:23px}
 }
+/* ===== v3.6 기수·전체 리셋 ===== */
+.co-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.co-box{background:#FBFDFC;border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+.co-box .kpi-label{margin:0}
+.co-val{margin:7px 0 0;font-size:16px;font-weight:900;letter-spacing:-.4px;color:var(--ink);word-break:break-all;line-height:1.3}
+.co-val.small{font-size:12px;font-weight:800;color:var(--ink-2)}
+.danger-panel{border-color:#F3D3CE;background:#FFF9F8}
+.danger-panel .section-title h2{color:#8E2B20}
+.check-row{display:flex;gap:9px;align-items:flex-start;margin:0 0 12px;cursor:pointer}
+.check-row input{width:18px !important;height:18px !important;flex:0 0 auto;margin:2px 0 0;padding:0 !important;accent-color:var(--danger)}
+.check-row span{font-size:12.5px;font-weight:700;color:var(--ink-2);line-height:1.5}
+.check-row em{font-style:normal;color:var(--ink-3);font-weight:600}
+
 /* ===== 채팅 관리 ===== */
 .chatlist{display:flex;flex-direction:column;gap:8px}
 .crow{display:flex;align-items:flex-start;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:14px;background:#fff}
@@ -239,6 +252,7 @@ main{padding-top:6px}
     <button type="button" data-tab="shots" role="tab">인증샷 관리</button>
     <button type="button" data-tab="chat" role="tab">채팅 관리</button>
     <button type="button" data-tab="settings" role="tab">공지·상담 설정</button>
+    <button type="button" data-tab="cohort" role="tab">기수 · 전체 리셋</button>
   </nav>
 
   <div class="statusline">
@@ -346,6 +360,50 @@ main{padding-top:6px}
     </section>
 
     <!-- ===== 설정 ===== -->
+    <!-- ===== 기수 · 전체 리셋 (v3.6) ===== -->
+    <section id="tab-cohort" hidden>
+      <div class="section-title"><h2>이번 기수</h2><span id="cohortSub">-</span></div>
+      <div class="panel">
+        <div class="co-cards">
+          <div class="co-box">
+            <div class="kpi-label">📅 공식 시작일</div>
+            <div class="co-val" id="coStart">-</div>
+          </div>
+          <div class="co-box">
+            <div class="kpi-label">🔄 기수 ID</div>
+            <div class="co-val small" id="coRound">-</div>
+          </div>
+          <div class="co-box">
+            <div class="kpi-label">🗓 운영 기간</div>
+            <div class="co-val small" id="coPeriod">-</div>
+          </div>
+        </div>
+        <p class="field-hint" style="margin:0">회원 앱은 공식 시작일을 기준으로 <b>Day 1~21</b>과 <b>3일 여유 기간(Day 22~24)</b>을 계산합니다. 기수를 시작하지 않으면 회원은 각자 정한 시작일로 앱을 씁니다.</p>
+      </div>
+
+      <div class="section-title"><h2>새 기수 시작 · 전체 리셋</h2><span>되돌릴 수 없습니다</span></div>
+      <div class="panel danger-panel">
+        <label class="field"><span>새 기수 공식 시작일</span>
+          <input id="coDate" type="date">
+        </label>
+        <p class="field-hint">비우고 시작하면 <b>오늘</b>이 Day 1이 됩니다. 회원 앱은 다음 접속 때 이 날짜로 자동 전환됩니다.</p>
+        <label class="check-row">
+          <input id="coChat" type="checkbox">
+          <span>채팅 기록(chat_messages)도 함께 초기화 <em>— 기본은 보존</em></span>
+        </label>
+        <div class="row-actions">
+          <button class="btn ghost" id="btnBackupAll" type="button">전체 기록 CSV 백업</button>
+          <button class="btn danger" id="btnResetAll" type="button">전체 리셋…</button>
+        </div>
+        <p class="field-hint" style="margin-top:12px">
+          리셋하면 <b>모든 회원의 인증 기록(checkins)·응원(reactions)·댓글(checkin_comments)</b>이 서버에서 삭제되고,
+          회원 앱은 다음 접속 때 새 기수로 다시 시작합니다(닉네임·카카오 로그인·채팅은 유지).
+          확인 창에서 <b>‘리셋’</b>을 한 번 더 입력해야 실행됩니다. 먼저 백업해 주세요.
+        </p>
+      </div>
+      <p class="field-hint" style="margin:10px 2px 0">※ 이 화면의 리셋은 실제 운영 데이터를 지웁니다. 테스트할 때는 리셋 직후 회원 기록이 다시 쌓이지 않도록 주의하세요.</p>
+    </section>
+
     <section id="tab-settings" hidden>
       <div class="section-title"><h2>공지사항 &amp; 상담 링크</h2><span id="settingsSub">-</span></div>
       <div class="panel">
@@ -621,7 +679,8 @@ main{padding-top:6px}
       .then(function(res){
         if(res.error) throw res.error;
         var row = (res.data || [])[0] || null;
-        return row || {id: 'default', notice_text: '', cta_label: '', cta_url: '', cohort_name: '', updated_at: null};
+        return row || {id: 'default', notice_text: '', cta_label: '', cta_url: '', cohort_name: '', updated_at: null,
+                       challenge_start_date: '', challenge_round_id: ''};
       });
   }
 
@@ -704,6 +763,7 @@ main{padding-top:6px}
   /* ============ 렌더: 공통 ============ */
   function renderAll(){
     renderCohort();
+    renderCohortTab();
     renderDash();
     renderMembers();
     renderShots();
@@ -1036,6 +1096,163 @@ main{padding-top:6px}
     });
   }
 
+
+  /* ============ v3.6 · 기수 · 전체 리셋 ============ */
+  function plusDays(k, n){
+    var d = parseKey(k);
+    if(!d) return '';
+    d.setDate(d.getDate() + n);
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  }
+
+  function renderCohortTab(){
+    var s = MODEL.settings || {};
+    var start = String(s.challenge_start_date || '').trim();
+    var rid = String(s.challenge_round_id || '').trim();
+    var startEl = $('#coStart'), roundEl = $('#coRound'), periodEl = $('#coPeriod'), subEl = $('#cohortSub');
+    if(!startEl) return;
+    startEl.textContent = start ? fmtDate(start) : '아직 시작 안 함';
+    roundEl.textContent = rid || '—';
+    periodEl.textContent = start
+      ? (fmtDate(start) + ' ~ ' + fmtDate(plusDays(start, 23)) + ' · 24일')
+      : '회원별 시작일 사용';
+    subEl.textContent = rid
+      ? ('기수 ID …' + rid.slice(-6))
+      : '아직 시작하지 않았습니다';
+    var dateEl = $('#coDate');
+    if(dateEl && !dateEl.value) dateEl.value = start || todayKey();
+  }
+
+  /* 전체 인증 기록 CSV — 리셋 전 백업용 */
+  function exportAllCheckinsCsv(){
+    var rows = [['닉네임','회원키','날짜','Day','이오메가','레몬','포스티엠','3종완료','소감','인증샷주소','수정시각']];
+    (MODEL.rows || []).slice().sort(function(a, b){
+      var c = String(a.date_str || '').localeCompare(String(b.date_str || ''));
+      if(c) return c;
+      return String(a.nickname || '').localeCompare(String(b.nickname || ''), 'ko');
+    }).forEach(function(r){
+      rows.push([
+        r.nickname || '', r.user_key || '', r.date_str || '', r.day_no || '',
+        r.xeo ? 'O' : 'X', r.lemon ? 'O' : 'X', r.postime ? 'O' : 'X',
+        (r.xeo && r.lemon && r.postime) ? 'O' : 'X',
+        r.memo || '', r.photo_url || '', r.updated_at || r.created_at || ''
+      ]);
+    });
+    if(rows.length < 2){ toast('백업할 기록이 없습니다'); return; }
+    downloadCsv('triple21_전체기록백업_' + todayKey() + '.csv', rows);
+    toast((rows.length - 1) + '건 · CSV를 내려받았어요');
+  }
+
+  function roundStamp(){
+    var d = new Date();
+    return 'r' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + '-' + d.getTime().toString(36);
+  }
+
+  function askResetStart(){
+    if(!initClient()){ toast('서버 연결 실패'); return; }
+    var raw = ($('#coDate').value || '').trim();
+    if(raw && !/^\d{4}-\d{2}-\d{2}$/.test(raw)){ toast('시작일을 다시 선택해 주세요'); return; }
+    var start = raw || todayKey();
+    var withChat = !!$('#coChat').checked;
+    var counts = {
+      rows: (MODEL.rows || []).length,
+      photos: (MODEL.rows || []).filter(function(r){ return !!r.photo_url; }).length,
+      members: (MODEL.members || []).length,
+      chat: (MODEL.chat || []).length
+    };
+    confirmModal({
+      title: '새 기수를 시작할까요?',
+      sub: '공식 시작일 ' + fmtDate(start) + ' · 회원 ' + counts.members + '명',
+      body: '인증 기록 <b>' + counts.rows + '건</b>(인증샷 ' + counts.photos + '장), 응원·댓글이 서버에서 <b>모두 삭제</b>됩니다.<br>' +
+            (withChat ? '채팅 <b>' + counts.chat + '건</b>도 함께 삭제됩니다.<br>' : '채팅은 그대로 보존됩니다.<br>') +
+            '되돌릴 수 없으니 먼저 <b>전체 기록 CSV 백업</b>을 받아 두세요.',
+      okText: '계속 →',
+      okKind: 'danger',
+      cancelText: '취소'
+    }).then(function(ok){
+      if(ok) askResetTyped(start, withChat, counts);
+    });
+  }
+
+  function askResetTyped(start, withChat, counts){
+    var body = document.createElement('div');
+    body.innerHTML =
+      '<p style="margin:0 0 12px">마지막 확인입니다. 아래 칸에 <b>리셋</b>이라고 정확히 입력해 주세요.</p>' +
+      '<label class="field" style="margin:0"><span>확인 문구</span>' +
+        '<input id="resetWord" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="리셋">' +
+      '</label>' +
+      '<p class="field-hint" id="resetHint" style="margin:8px 0 0">' +
+        esc(fmtDate(start)) + ' 시작 · 기록 ' + counts.rows + '건 · 응원·댓글 전체 삭제' +
+        (withChat ? ' · 채팅 ' + counts.chat + '건' : '') + '</p>';
+    openModal({
+      title: '정말 전체 리셋할까요?',
+      sub: '이 작업은 되돌릴 수 없습니다',
+      body: body,
+      actions: [
+        {label: '취소', kind: 'ghost'},
+        {label: '전체 리셋 실행', kind: 'danger', keepOpen: true, onClick: function(btn){
+          var word = (($('#resetWord') || {}).value || '').trim();
+          if(word !== '리셋'){
+            var h = $('#resetHint');
+            if(h){ h.textContent = '‘리셋’이라고 정확히 입력해야 실행됩니다.'; h.style.color = 'var(--danger)'; }
+            vibrateAdmin();
+            return;
+          }
+          btn.disabled = true; btn.textContent = '리셋 중…';
+          doReset(start, withChat).then(function(){
+            closeModal();
+          }).catch(function(){
+            btn.disabled = false; btn.textContent = '전체 리셋 실행';
+          });
+        }}
+      ]
+    });
+    setTimeout(function(){ var i = $('#resetWord'); if(i) i.focus(); }, 140);
+  }
+
+  function vibrateAdmin(){ try{ if(navigator.vibrate) navigator.vibrate(20); }catch(e){} }
+
+  function deleteAll(table, extra){
+    return db.from(table).delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      .then(function(res){ if(res && res.error) throw res.error; return res; });
+  }
+
+  function doReset(start, withChat){
+    var roundId = roundStamp();
+    setLive('loading');
+    toast('새 기수로 리셋하는 중…');
+    return db.from('app_settings').upsert({
+      id: 'default',
+      challenge_start_date: start,
+      challenge_round_id: roundId,
+      updated_at: new Date().toISOString()
+    }, {onConflict: 'id'}).then(function(res){
+      if(res && res.error) throw res.error;
+      /* 대화(선택) → 응원 → 댓글 → 인증 기록 순서로 삭제 */
+      var chain = Promise.resolve();
+      if(withChat) chain = chain.then(function(){ return deleteAll('chat_messages'); });
+      chain = chain.then(function(){ return deleteAll('reactions'); });
+      chain = chain.then(function(){ return deleteAll('checkin_comments'); });
+      chain = chain.then(function(){ return deleteAll('checkins'); });
+      return chain;
+    }).then(function(){
+      if(withChat) MODEL.chat = [];
+      return loadAll(true);
+    }).then(function(){
+      setLive('ok');
+      var d = $('#coDate'); if(d) d.value = start;
+      var c = $('#coChat'); if(c) c.checked = false;
+      toast('새 기수(' + fmtDate(start) + ')를 시작했어요 · 회원 앱은 다음 접속 때 새로 시작합니다');
+      return true;
+    }).catch(function(e){
+      setLive('error');
+      var msg = (e && (e.message || e.hint || e.details)) ? (e.message || e.hint || e.details) : '알 수 없는 오류';
+      toast('리셋 실패: ' + msg);
+      showErr('전체 리셋에 실패했습니다: ' + msg + ' — 서버 권한(RLS)과 네트워크를 확인해 주세요. 기록이 일부만 지워졌을 수 있으니 위 백업 파일을 보관해 주세요.');
+      throw e;
+    });
+  }
+
   /* ============ 렌더: 설정 ============ */
   function renderSettings(){
     var s = MODEL.settings || {};
@@ -1108,10 +1325,11 @@ main{padding-top:6px}
       $$('.tabs button').forEach(function(x){ x.classList.remove('on'); x.setAttribute('aria-selected', 'false'); });
       b.classList.add('on'); b.setAttribute('aria-selected', 'true');
       var tab = b.getAttribute('data-tab');
-      ['dash','members','shots','chat','settings'].forEach(function(t){
+      ['dash','members','shots','chat','settings','cohort'].forEach(function(t){
         $('#tab-' + t).hidden = (t !== tab);
       });
       if(tab === 'settings') renderSettings();
+      if(tab === 'cohort') renderCohortTab();
       if(tab === 'shots') renderShots();
       if(tab === 'chat'){ try{ renderChatAdmin(); }catch(e){ console.warn('[admin] 채팅 렌더 실패', e); toast('채팅을 표시하지 못했습니다'); } }
     });
@@ -1136,6 +1354,12 @@ main{padding-top:6px}
       toast('채팅을 새로 불러왔어요');
     }).catch(function(e){ toast('불러오기 실패: ' + (e.message || '')); });
   });
+
+  /* v3.6: 기수 탭 이벤트 */
+  var btnBackupAll = $('#btnBackupAll');
+  if(btnBackupAll) btnBackupAll.addEventListener('click', exportAllCheckinsCsv);
+  var btnResetAll = $('#btnResetAll');
+  if(btnResetAll) btnResetAll.addEventListener('click', askResetStart);
 
   $('#btnRefresh').addEventListener('click', function(){
     var b = this; b.disabled = true; b.textContent = '불러오는 중…';

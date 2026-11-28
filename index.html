@@ -342,13 +342,56 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .toast.top{top:calc(14px + env(safe-area-inset-top));bottom:auto;transform:translate(-50%,-14px)}
 .toast.top.show{transform:translate(-50%,0)}
-.confetti{position:fixed;inset:0;z-index:95;pointer-events:none;overflow:hidden}
+.confetti{position:fixed;inset:0;z-index:140;pointer-events:none;overflow:hidden}
 .confetti span{position:absolute;top:-14px;width:8px;height:12px;border-radius:2px;animation:fall linear forwards}
 .confetti span.round{border-radius:50%;width:8px;height:8px}
 @keyframes fall{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(105dvh) rotate(540deg);opacity:.85}}
 .lightbox{position:fixed;inset:0;z-index:80;background:rgba(6,20,16,.94);display:flex;align-items:center;justify-content:center;padding:18px}
 .lightbox img{max-width:100%;max-height:82dvh;border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
 .lightbox button{position:absolute;top:calc(14px + env(safe-area-inset-top));right:16px;width:38px;height:38px;border-radius:50%;border:none;background:rgba(255,255,255,.16);color:#fff;font-size:16px;font-weight:800;cursor:pointer}
+
+/* ---------- v3.6 · 21+3 여유 기간 · 보충 카드 ---------- */
+.grace-banner{display:flex;gap:10px;align-items:flex-start;margin-top:12px;padding:13px 14px;border-radius:18px;background:linear-gradient(115deg,#EAF7FF,#D9F0FF);border:1.5px solid #BEDFF5}
+.grace-banner .g-emoji{font-size:21px;line-height:1.15;flex:0 0 auto}
+.grace-banner strong{display:block;font-size:13px;font-weight:900;letter-spacing:-.3px;color:#0B4F6C}
+.grace-banner p{margin:4px 0 0;font-size:11.5px;color:#2C6B85;font-weight:600;line-height:1.5;word-break:keep-all}
+.grace-days{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.grace-day{border:1.5px solid #CFE3F0;background:#fff;color:#2C6B85;border-radius:9px;padding:4px 8px;font-size:10.5px;font-weight:800}
+.grace-day.on{background:#0B6E9C;border-color:#0B6E9C;color:#fff}
+.makeup-list{display:flex;flex-direction:column;gap:7px;margin-top:10px}
+.makeup-row{display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);background:#fff;border-radius:14px;padding:10px 11px;cursor:pointer;text-align:left;width:100%;color:inherit}
+.makeup-row:active{background:var(--mint-soft);border-color:#BEE7D6}
+.makeup-day{font-size:10.5px;font-weight:900;color:#fff;background:linear-gradient(140deg,var(--mint),var(--mint-2));border-radius:8px;padding:4px 7px;flex:0 0 auto}
+.makeup-date{font-size:12px;font-weight:800;color:var(--ink);white-space:nowrap}
+.makeup-marks{margin-left:auto;font-size:10.5px;font-weight:800;color:var(--ink-3);white-space:nowrap}
+.makeup-go{font-size:10.5px;font-weight:900;color:var(--mint-dark);border:1.5px solid #CFE9DE;background:var(--mint-soft);border-radius:999px;padding:4px 9px;flex:0 0 auto}
+.cal-grace{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:9px}
+.cal-grace .g-cell{border:1.5px dashed #BEDFF5;background:#F5FBFF;border-radius:12px;padding:7px 4px;text-align:center}
+.cal-grace .g-cell.today{border-style:solid;border-color:#0B6E9C;background:#E3F3FF}
+.cal-grace b{display:block;font-size:11px;font-weight:900;color:#0B4F6C}
+.cal-grace span{display:block;font-size:9.5px;font-weight:700;color:#5C8CA3;margin-top:1px}
+.cal-grace-note{margin:7px 0 0;font-size:10.5px;font-weight:700;line-height:1.5;color:#5C8CA3}
+.hero-top .pill-win{background:linear-gradient(120deg,#FFD028,#FFE98A);color:#5A4200;border:1.5px solid rgba(255,255,255,.55);font-weight:900;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.14)}
+
+/* ---------- v3.6 · 21일 완주 팡파레 ---------- */
+.party{position:fixed;inset:0;z-index:130;display:grid;place-items:center;padding:22px;background:radial-gradient(circle at 50% 40%,rgba(9,38,30,.72),rgba(5,20,15,.92));animation:partyIn .28s ease both}
+@keyframes partyIn{from{opacity:0}to{opacity:1}}
+.party-card{position:relative;width:100%;max-width:352px;border-radius:26px;padding:26px 20px 18px;text-align:center;overflow:hidden;background:linear-gradient(165deg,#FFFDF3,#FFFFFF 46%,#F3FBF7);box-shadow:0 30px 70px rgba(0,0,0,.35),0 0 0 1.5px rgba(255,224,120,.9);animation:partyPop .5s cubic-bezier(.2,1.2,.3,1) both}
+@keyframes partyPop{0%{transform:scale(.84) translateY(14px);opacity:.4}100%{transform:none;opacity:1}}
+.party-card::before{content:'';position:absolute;left:-20%;right:-20%;top:-70px;height:230px;background:radial-gradient(circle at 50% 62%,rgba(255,214,90,.45),rgba(255,214,90,0) 70%);pointer-events:none}
+.party-card>*{position:relative}
+.party-badge{width:84px;height:84px;margin:0 auto 10px;border-radius:50%;display:grid;place-items:center;font-size:42px;line-height:1;background:linear-gradient(150deg,#FFE98A,#FFC93C);box-shadow:0 14px 26px rgba(200,150,0,.32),inset 0 -4px 10px rgba(160,110,0,.18);animation:partyBob 2.6s ease-in-out infinite}
+@keyframes partyBob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-7px) rotate(3deg)}}
+.party-kicker{margin:0;font-size:10.5px;font-weight:900;letter-spacing:.7px;color:#9A7A00}
+.party-card h2{margin:5px 0 0;font-size:23px;font-weight:900;letter-spacing:-.9px;color:#12241E}
+.party-name{margin:9px 0 0;font-size:12.5px;font-weight:700;line-height:1.6;color:#496158;word-break:keep-all}
+.party-stats{display:flex;gap:7px;margin:15px 0 2px}
+.party-stats div{flex:1;border-radius:14px;background:#F4FAF7;border:1px solid #E1EFE8;padding:9px 4px}
+.party-stats b{display:block;font-size:17px;font-weight:900;color:var(--mint-dark);letter-spacing:-.5px;line-height:1.15}
+.party-stats span{display:block;font-size:9.5px;font-weight:800;color:#7B948A;margin-top:2px}
+.party-card .btn{margin-top:9px;font-size:14px;padding:13px 14px}
+.party-close{position:absolute;top:9px;right:9px;width:32px;height:32px;border-radius:50%;border:none;background:rgba(15,35,28,.07);color:#496158;font-size:13px;font-weight:900;cursor:pointer}
+.confetti span.emoji{background:none !important;width:auto;height:auto;border-radius:0;font-size:17px;line-height:1}
 
 /* ---------- 시작 화면(스플래시) ---------- */
 .splash{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:32px;color:var(--ink);text-align:center;overflow:hidden;
@@ -510,6 +553,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
         <div class="hero-top">
           <span class="pill pill-day" id="heroDay">Day 1</span>
           <span class="pill pill-fire" id="heroStreak">🔥 오늘부터 시작</span>
+          <button class="pill pill-win" id="heroWin" type="button" hidden>🏆 21일 완주</button>
         </div>
         <div class="hero-user">
           <div class="avatar" id="heroAvatar">🌿</div>
@@ -533,6 +577,24 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       <div class="auth-card" id="authCard" hidden></div>
 
       <div class="notice" id="periodNotice" hidden></div>
+
+      <div class="grace-banner" id="graceBanner" hidden>
+        <span class="g-emoji" aria-hidden="true">🕊️</span>
+        <div style="flex:1;min-width:0">
+          <strong id="graceTitle">보충·마무리 여유 기간</strong>
+          <p id="graceText"></p>
+          <div class="grace-days" id="graceDays"></div>
+        </div>
+      </div>
+
+      <div class="card" id="makeupCard" hidden>
+        <div class="card-head">
+          <h3>🩹 빠진 날 보충하기</h3>
+          <span class="muted" id="makeupCount">-</span>
+        </div>
+        <p class="hint" style="text-align:left;margin:0">여유 기간 동안 Day 1~21 중 빠진 날을 채울 수 있어요. 날짜를 누르면 그날 기록이 열립니다.</p>
+        <div class="makeup-list" id="makeupList"></div>
+      </div>
 
       <div class="section-head">
         <h2>오늘의 트리플 루틴</h2>
@@ -561,7 +623,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
         <div><strong>오늘 트리플 루틴 완료!</strong><p>3종을 모두 채웠어요. 인증샷을 남기고 카톡으로 자랑해 보세요.</p></div>
       </div>
 
-      <div class="card">
+      <div class="card" id="todayCard">
         <div class="card-head">
           <h3>📸 오늘 인증샷</h3>
           <span class="muted" id="photoState">선택 사항</span>
@@ -614,6 +676,8 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
         </div>
         <div class="cal-week"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
         <div class="cal-grid" id="calGrid"></div>
+        <div class="cal-grace" id="calGrace"></div>
+        <p class="cal-grace-note" id="calGraceNote"></p>
       </div>
       <div class="stats" id="calStats"></div>
       <div class="card tip-card">💡 날짜를 누르면 그날 기록이 열려요. 체크·인증샷·소감을 그 자리에서 고칠 수 있습니다.</div>
@@ -775,6 +839,8 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
   /* ================= 상수 ================= */
   var WEEK = ['일','월','화','수','목','금','토'];
   var TOTAL = 21;
+  var GRACE = 3;                 /* v3.6: 21일 뒤 보충·마무리 여유 3일 */
+  var LIMIT = TOTAL + GRACE;     /* v3.6: 총 운영 24일 (Day 1~24) */
   var META_KEY = 'triple21.meta.v1';
   var PHOTO_PREFIX = 'triple21.photo.v1.';
   /* 도테라 코리아 공식 제품 이미지(media.doterra.com)로 만든 160x160 아이콘 */
@@ -814,7 +880,8 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
   var state = loadMeta();
 
   function loadMeta(){
-    var base = {nickname:'', startDate:todayKey(), days:{}, react:{}, onboarded:false, tipDismissed:false};
+    var base = {nickname:'', startDate:todayKey(), days:{}, react:{}, onboarded:false, tipDismissed:false,
+                roundId:'', celebratedRound:''};   /* v3.6: 서버 기수 ID · 완주 축하 1회 플래그 */
     try{
       var raw = localStorage.getItem(META_KEY);
       if(raw){
@@ -826,6 +893,8 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
           if(parsed.react && typeof parsed.react === 'object') base.react = parsed.react;
           base.onboarded = !!parsed.onboarded;
           base.tipDismissed = !!parsed.tipDismissed;
+          if(typeof parsed.roundId === 'string') base.roundId = parsed.roundId;
+          if(typeof parsed.celebratedRound === 'string') base.celebratedRound = parsed.celebratedRound;
         }
       }
     }catch(e){ /* 저장소를 못 읽어도 앱은 열린다 */ }
@@ -866,7 +935,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     var reloadTimer = null;
     var pushTimers = {};
     var subscribed = false;
-    var settings = {notice_text:'', cohort_name:'', updated_at:null};
+    var settings = {notice_text:'', cohort_name:'', updated_at:null, challenge_start_date:'', challenge_round_id:''};
 
     function init(){
       try{
@@ -1167,6 +1236,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
         return pullMine();
       }).then(function(){
         renderAll();
+        maybeCelebrate();
         return pushAll();
       }).then(function(){
         if((state.nickname || '').trim()) syncProfile();
@@ -1398,7 +1468,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     /* 관리자(admin.html)가 고친 공지·상담 문구를 받아온다 */
     function loadSettings(){
       if(!ready) return Promise.resolve(false);
-      return client.from('app_settings').select('notice_text,cohort_name,updated_at')
+      return client.from('app_settings').select('notice_text,cohort_name,updated_at,challenge_start_date,challenge_round_id')
         .eq('id', 'default').limit(1)
         .then(function(res){
           if(res.error) throw res.error;
@@ -1407,8 +1477,11 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
             settings.notice_text = row.notice_text || '';
             settings.cohort_name = row.cohort_name || '';
             settings.updated_at = row.updated_at || null;
+            settings.challenge_start_date = row.challenge_start_date || '';
+            settings.challenge_round_id = row.challenge_round_id || '';
           }
           renderNotice();
+          syncRoundFromServer();   /* v3.6: 관리자가 새 기수를 시작했으면 기록을 새로 시작 */
           return true;
         })
         .catch(function(e){
@@ -1774,6 +1847,226 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       box.appendChild(s);
     }
     setTimeout(function(){ box.innerHTML = ''; }, 3200);
+  }
+
+
+  /* ================= v3.6 · 기수(라운드) 동기화 ================= */
+  /* 관리자가 admin.html 에서 '새 기수 시작 · 전체 리셋'을 누르면 app_settings 의
+     challenge_round_id 가 바뀝니다. 이 기기에 저장된 기수 ID 와 다르면
+     닉네임·카카오 로그인은 그대로 두고 챌린지 기록만 새로 시작합니다. */
+  function serverStartDate(){
+    var s = Cloud.getSettings() || {};
+    var d = String(s.challenge_start_date || '').trim();
+    return /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : '';
+  }
+  function serverRoundId(){
+    var s = Cloud.getSettings() || {};
+    return String(s.challenge_round_id || '').trim();
+  }
+  /* 이 기기에만 있는 인증샷(사진) 정리 — 기수 리셋 때 함께 비운다 */
+  function clearDevicePhotos(){
+    try{
+      var rm = [];
+      for(var i = 0; i < localStorage.length; i++){
+        var k = localStorage.key(i);
+        if(k && k.indexOf(PHOTO_PREFIX) === 0) rm.push(k);
+      }
+      rm.forEach(function(k){ localStorage.removeItem(k); });
+    }catch(e){}
+  }
+  function syncRoundFromServer(){
+    var rid = serverRoundId();
+    if(!rid) return false;                                   /* 관리자가 기수를 정하지 않았으면 이 기기 설정 그대로 */
+    if(rid === String(state.roundId || '')) return false;    /* 이미 같은 기수 */
+    clearDevicePhotos();
+    state.days = {};
+    state.react = {};
+    state.celebratedRound = '';
+    state.roundId = rid;
+    state.startDate = serverStartDate() || todayKey();
+    state.onboarded = true;
+    saveMeta();
+    closeParty();
+    renderAll();
+    toast('새 기수가 시작됐어요. 기록을 새로 시작합니다 🌿');
+    return true;
+  }
+
+  /* ================= v3.6 · 21일 + 3일 여유 기간 ================= */
+  /* Day 1~21 중 아직 오지 않은 날을 뺀, 3종을 다 채우지 못한 날 */
+  function pendingDays(){
+    var out = [];
+    for(var i = 0; i < TOTAL; i++){
+      var k = addDays(state.startDate, i);
+      if(diffDays(todayKey(), k) > 0) continue;
+      if(!complete(k)) out.push(k);
+    }
+    return out;
+  }
+  function renderGraceBanner(n, inGrace){
+    var box = $('#graceBanner');
+    if(!box) return;
+    if(!inGrace){ box.hidden = true; return; }
+    var left = LIMIT - n + 1;              /* 오늘을 포함한 남은 일수 */
+    var missing = pendingDays();
+    $('#graceTitle').textContent = '보충·마무리 여유 기간 · 종료까지 ' + left + '일 남음';
+    $('#graceText').textContent = missing.length
+      ? ('Day 1~21 중 ' + missing.length + '일이 비어 있어요. 아래에서 빠진 날을 채우면 21일 완주로 인정됩니다.')
+      : 'Day 1~21을 모두 채웠어요. 인증샷과 소감을 마무리해 보세요.';
+    var html = '';
+    for(var i = TOTAL + 1; i <= LIMIT; i++){
+      var k = addDays(state.startDate, i - 1);
+      var on = (k === todayKey());
+      html += '<span class="grace-day' + (on ? ' on' : '') + '">Day ' + i + ' · ' + fmtShort(k) + (on ? ' · 오늘' : '') + '</span>';
+    }
+    $('#graceDays').innerHTML = html;
+    box.hidden = false;
+  }
+  function renderMakeup(n, inGrace){
+    var card = $('#makeupCard');
+    if(!card) return;
+    if(!inGrace){ card.hidden = true; return; }
+    var list = $('#makeupList');
+    var missing = pendingDays();
+    $('#makeupCount').textContent = missing.length ? (missing.length + '일 남음') : '모두 채움';
+    if(!missing.length){
+      list.innerHTML = '<p class="hint" style="text-align:left;margin:0">빠진 날이 없어요. Day 1~21을 모두 채웠습니다. 정말 잘하셨어요! 🌿</p>';
+      card.hidden = false;
+      return;
+    }
+    list.innerHTML = missing.map(function(k){
+      var r = peek(k) || {};
+      var cnt = (r.x ? 1 : 0) + (r.l ? 1 : 0) + (r.p ? 1 : 0);
+      return '<button type="button" class="makeup-row" data-makeup="' + k + '">' +
+        '<span class="makeup-day">Day ' + dayNum(k) + '</span>' +
+        '<span class="makeup-date">' + fmtKo(k) + '</span>' +
+        '<span class="makeup-marks">' + (cnt ? (cnt + '/3 체크') : '기록 없음') + '</span>' +
+        '<span class="makeup-go">채우기</span>' +
+      '</button>';
+    }).join('');
+    card.hidden = false;
+  }
+
+  /* ================= v3.6 · 21일 완주 팡파레 ================= */
+  var partyTimer = null;
+  function currentRound(){
+    var rid = String(state.roundId || '').trim();
+    return rid || ('local:' + state.startDate);
+  }
+  function isFinished(){ return countDone() >= TOTAL; }
+  function bestStreak(){
+    var best = 0, run = 0;
+    for(var i = 0; i < TOTAL; i++){
+      if(complete(addDays(state.startDate, i))){ run++; if(run > best) best = run; }
+      else { run = 0; }
+    }
+    return best;
+  }
+  function finishShareText(){
+    var nick = (state.nickname || '트리플러').trim() || '트리플러';
+    var end = addDays(state.startDate, TOTAL - 1);
+    return '🏆 21일 트리플챌린지 완주!\n' + nick + ' 님, 이오메가 리퀴드 · 레몬 · 포스티엠 ' + TOTAL + '일을 모두 채웠어요.\n' +
+      '인증샷 ' + countPhoto() + '장 · 최고 연속 ' + bestStreak() + '일 · ' + fmtDot(state.startDate) + ' ~ ' + fmtDot(end) + '\n' +
+      '#21일트리플챌린지 #트리플챌린지';
+  }
+  function partyConfetti(){
+    var box = $('#confetti');
+    if(!box) return;
+    var colors = ['#FFE15A','#12B58B','#FFFFFF','#7FE3BE','#FFC93C','#FF8FA3','#8ED6FF','#C6A8FF'];
+    var emojis = ['🎉','✨','🎊','🌿','🍋','💧','⭐️','🥳'];
+    box.innerHTML = '';
+    for(var i = 0; i < 110; i++){
+      var s = document.createElement('span');
+      s.style.left = (Math.random() * 100) + '%';
+      s.style.animationDelay = (Math.random() * 1.5).toFixed(2) + 's';
+      s.style.animationDuration = (2.1 + Math.random() * 1.7).toFixed(2) + 's';
+      if(i % 9 === 0){
+        s.className = 'emoji';
+        s.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      } else if(i % 3 === 0){
+        s.className = 'round';
+        s.style.background = colors[i % colors.length];
+        s.style.width = s.style.height = (6 + Math.random() * 6).toFixed(0) + 'px';
+      } else {
+        s.style.background = colors[i % colors.length];
+        s.style.width = (6 + Math.random() * 5).toFixed(0) + 'px';
+        s.style.height = (9 + Math.random() * 9).toFixed(0) + 'px';
+      }
+      box.appendChild(s);
+    }
+    clearTimeout(partyTimer);
+    partyTimer = setTimeout(function(){ if(box) box.innerHTML = ''; }, 5400);
+    try{
+      /* 사용자가 방금 누른 경우에만 진동(자동 실행 시 브라우저 경고 방지) */
+      if(!navigator.userActivation || navigator.userActivation.hasBeenActive) vibrate([18, 60, 18]);
+    }catch(e){}
+  }
+  function showParty(){
+    partyConfetti();
+    var old = $('#party');
+    if(old && old.parentNode) old.parentNode.removeChild(old);
+    var end = addDays(state.startDate, TOTAL - 1);
+    var name = (state.nickname || '').trim() || '회원';
+    var el = document.createElement('div');
+    el.className = 'party';
+    el.id = 'party';
+    el.setAttribute('role', 'dialog');
+    el.setAttribute('aria-modal', 'true');
+    el.setAttribute('aria-label', '21일 완주 축하');
+    el.innerHTML =
+      '<div class="party-card">' +
+        '<button class="party-close" type="button" data-party-close aria-label="닫기">✕</button>' +
+        '<div class="party-badge" aria-hidden="true">🏆</div>' +
+        '<p class="party-kicker">21일 트리플챌린지 완주</p>' +
+        '<h2>축하합니다!</h2>' +
+        '<p class="party-name">' + esc(name) + ' 님, Day 1~21을 모두 채웠어요<br>' + fmtDot(state.startDate) + ' ~ ' + fmtDot(end) + '</p>' +
+        '<div class="party-stats">' +
+          '<div><b>' + countDone() + '</b><span>완료한 날</span></div>' +
+          '<div><b>' + countPhoto() + '</b><span>인증샷</span></div>' +
+          '<div><b>' + bestStreak() + '</b><span>최고 연속</span></div>' +
+        '</div>' +
+        '<button class="btn btn-kakao" type="button" data-party-share>완주 소식 공유하기</button>' +
+        '<button class="btn btn-ghost" type="button" data-party-close>닫기</button>' +
+      '</div>';
+    document.body.appendChild(el);
+    el.addEventListener('click', function(e){
+      if(e.target.closest('[data-party-close]') || e.target === el){ closeParty(); return; }
+      if(e.target.closest('[data-party-share]')) sharePartyText();
+    });
+    setTimeout(function(){ if($('#party')) partyConfetti(); }, 1700);
+  }
+  function closeParty(){
+    var el = $('#party');
+    if(el && el.parentNode) el.parentNode.removeChild(el);
+    var box = $('#confetti');
+    if(box) box.innerHTML = '';
+  }
+  function sharePartyText(){
+    var text = finishShareText();
+    if(navigator.share){
+      navigator.share({text: text}).then(function(){ toast('공유 창을 열었어요'); }).catch(function(err){
+        if(err && err.name === 'AbortError') return;
+        copyText(text).then(function(ok){ toast(ok ? '완주 소식 문구를 복사했어요! 카톡에 붙여넣어 보세요' : '공유에 실패했어요. 문구를 길게 눌러 복사해 주세요'); });
+      });
+      return;
+    }
+    copyText(text).then(function(ok){ toast(ok ? '완주 소식 문구를 복사했어요! 카톡에 붙여넣어 보세요' : '복사에 실패했어요. 문구를 길게 눌러 복사해 주세요'); });
+  }
+  /* 21일을 모두 채웠을 때 한 번만 축하 화면을 띄운다(force = 다시 보기) */
+  function maybeCelebrate(force){
+    if(!isFinished()) return false;
+    var round = currentRound();
+    if(!force && state.celebratedRound === round) return false;
+    if(state.celebratedRound !== round){ state.celebratedRound = round; saveMeta(); }
+    setTimeout(showParty, force ? 0 : 240);
+    return true;
+  }
+  function renderWinBadge(){
+    var b = $('#heroWin');
+    if(!b) return;
+    var won = isFinished();
+    b.hidden = !won;
+    if(won) b.textContent = '🏆 21일 완주';
   }
 
   /* ================= 사진 ================= */
@@ -2170,10 +2463,11 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
   function renderToday(){
     var tk = todayKey();
     var n = dayNum(tk);
-    var inRange = n >= 1 && n <= TOTAL;
+    var inRange = n >= 1 && n <= TOTAL;            /* 챌린지 본 기간 (Day 1~21) */
+    var inGrace = n > TOTAL && n <= LIMIT;          /* v3.6: 보충·마무리 여유 (Day 22~24) */
     var rec = peek(tk) || {x:false, l:false, p:false, memo:''};
 
-    $('#heroDay').textContent = inRange ? ('Day ' + n) : (n < 1 ? ('D-' + (1 - n)) : '완주');
+    $('#heroDay').textContent = (n >= 1 && n <= LIMIT) ? ('Day ' + n) : (n < 1 ? ('D-' + (1 - n)) : (isFinished() ? '완주' : '마감'));
     var streak = calcStreak();
     $('#heroStreak').textContent = streak > 0 ? ('🔥 ' + streak + '일 연속') : '🌱 오늘부터 시작';
 
@@ -2185,7 +2479,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     } else {
       $('#heroAvatar').textContent = nick ? Array.from(nick)[0] : '🌿';
     }
-    $('#heroDate').textContent = fmtKo(tk) + (inRange ? ' · 오늘' : '');
+    $('#heroDate').textContent = fmtKo(tk) + (inRange ? ' · 오늘' : (inGrace ? ' · 여유 기간' : ''));
 
     var done = countDone();
     var pct = Math.round(done / TOTAL * 100);
@@ -2194,7 +2488,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     $('#progressFill').style.width = pct + '%';
 
     var cnt = (rec.x?1:0) + (rec.l?1:0) + (rec.p?1:0);
-    $('#todayCount').textContent = '3개 중 ' + cnt + '개 완료';
+    $('#todayCount').textContent = inGrace ? '여유 기간' : ('3개 중 ' + cnt + '개 완료');
 
     $$('#routines .routine').forEach(function(btn){
       var k = btn.getAttribute('data-k');
@@ -2209,15 +2503,22 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     if(allDone && !lastComplete) celebrate();
     lastComplete = allDone;
 
+    /* v3.6: 본 기간 · 여유 기간(Day 22~24) · 최종 마감 안내 */
     var notice = $('#periodNotice');
-    if(!inRange){
+    if(n < 1){
       notice.hidden = false;
-      notice.textContent = n < 1
-        ? ('챌린지 시작일은 ' + fmtKo(state.startDate) + '이에요. ' + (1 - n) + '일 뒤에 시작합니다.')
-        : ('21일 챌린지를 모두 마쳤어요! 수고하셨습니다. 설정에서 새 시작일로 다시 시작할 수 있습니다.');
-    } else {
+      notice.textContent = '챌린지 시작일은 ' + fmtKo(state.startDate) + '이에요. ' + (1 - n) + '일 뒤에 시작합니다.';
+    } else if(inRange || inGrace){
       notice.hidden = true;
+    } else {
+      notice.hidden = false;
+      notice.textContent = isFinished()
+        ? ('21일 트리플챌린지를 모두 마쳤어요! 21일 완주를 축하합니다 🏆 지난 기록은 달력에서 계속 볼 수 있어요.')
+        : ('챌린지 기간이 마무리됐어요. 21일 중 ' + countDone() + '일을 완료했습니다. 지난 기록은 달력에서 확인·수정할 수 있고, 설정에서 새 시작일로 다시 시작할 수 있어요.');
     }
+    renderGraceBanner(n, inGrace);
+    renderMakeup(n, inGrace);
+    renderWinBadge();
 
     var memoInput = $('#memoInput');
     if(document.activeElement !== memoInput){
@@ -2225,6 +2526,11 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     }
     memoInput.disabled = !inRange;
     $('#btnSaveToday').disabled = !inRange;
+    var shareBtn = $('#btnShare');
+    if(shareBtn) shareBtn.disabled = !inRange;
+    /* v3.6: 본 기간(Day 1~21)이 아니면 오늘 인증 카드는 보여주지 않는다(보충은 달력·보충 목록에서) */
+    var todayCard = $('#todayCard');
+    if(todayCard) todayCard.hidden = !inRange;
     updatePhotoLabel();
     var tip = $('#installTip');
     if(tip) tip.hidden = !!state.tipDismissed || isStandalone() || !(navigator.maxTouchPoints > 0 || 'ontouchstart' in window);
@@ -2263,7 +2569,19 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     grid.innerHTML = html;
 
     var endKey = addDays(state.startDate, TOTAL - 1);
-    $('#calRange').textContent = fmtDot(state.startDate) + ' ~ ' + fmtDot(endKey) + ' · 21일';
+    $('#calRange').textContent = fmtDot(state.startDate) + ' ~ ' + fmtDot(endKey) + ' · 21일 + 여유 ' + GRACE + '일';
+
+    /* v3.6: Day 22~24 여유 기간 칸 */
+    var graceBox = $('#calGrace'), graceNote = $('#calGraceNote');
+    if(graceBox){
+      var gHtml = '';
+      for(var g = TOTAL + 1; g <= LIMIT; g++){
+        var gk = addDays(state.startDate, g - 1);
+        gHtml += '<div class="g-cell' + (gk === todayKey() ? ' today' : '') + '"><b>Day ' + g + '</b><span>' + fmtShort(gk) + (gk === todayKey() ? ' · 오늘' : '') + '</span></div>';
+      }
+      graceBox.innerHTML = gHtml;
+    }
+    if(graceNote) graceNote.textContent = 'Day ' + (TOTAL + 1) + '~' + LIMIT + '는 21일 뒤 보충·마무리 여유 기간입니다. 위 달력에서 빠진 날을 그대로 채울 수 있어요.';
 
     var best = calcStreak();
     var maxStreak = 0, run = 0;
@@ -2766,6 +3084,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
           edit.draft = null; edit.remove = false;
           closeSheet();
           renderAll();
+          maybeCelebrate();   /* v3.6: 보충으로 21일을 다 채웠으면 팡파레 */
           if(pushJob){
             pushJob.then(function(r){
               if(r && r.ok && r.photoFailed){
@@ -2931,7 +3250,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       '<input type="file" id="setImportFile" accept="application/json,.json" hidden>' +
       '<p class="field-hint">※ 이미 올린 인증샷은 서버에 남아 함께 인증샷 탭에 계속 보입니다.</p>' +
       '<button class="btn btn-danger-ghost" id="setReset">모든 기록 초기화</button>' +
-      '<p class="foot">21일 트리플챌린지 · v3.5 (인증샷 타임스탬프 확대·가독성 · 1·2단계 저장·공유 버튼 정렬 · 새로고침 버튼 · 함께 인증샷 댓글 · 사진 업로드 수정 · 카카오 로그인 · 실시간 채팅)<br>기록은 카카오 로그인 시 계정에, 로그인 전에는 내 폰에 저장됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
+      '<p class="foot">21일 트리플챌린지 · v3.6 (21일+3일 여유 기간 · 21일 완주 팡파레 · 새 기수 전체 리셋 연동 · 인증샷 타임스탬프 · 함께 인증샷 댓글 · 카카오 로그인 · 실시간 채팅)<br>기록은 카카오 로그인 시 계정에, 로그인 전에는 내 폰에 저장됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
       function(card){
         var kb = $('#setKakaoLogin', card);
         if(kb) kb.addEventListener('click', function(){
@@ -3021,6 +3340,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
               saveMeta();
               closeSheet();
               renderAll();
+              maybeCelebrate();
               toast(skipped ? '백업을 불러왔어요 (사진 ' + skipped + '장은 공간 부족으로 건너뜀)' : '백업을 불러왔어요');
             }catch(err){ toast('백업 파일을 읽지 못했어요'); }
           };
@@ -3039,7 +3359,8 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
               }
               keys.forEach(function(k){ localStorage.removeItem(k); });
             }catch(e){}
-            state = {nickname:state.nickname, startDate:todayKey(), days:{}, react:{}, onboarded:true};
+            state = {nickname:state.nickname, startDate:todayKey(), days:{}, react:{}, onboarded:true,
+                     tipDismissed:false, roundId:String(state.roundId || ''), celebratedRound:''};
             saveMeta();
             renderAll();
             toast('모든 기록을 지웠어요. 오늘부터 다시 시작합니다.');
@@ -3076,7 +3397,8 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       '<div class="sheet-head"><div class="sheet-title"><span class="pill pill-day">환영합니다</span><h3>21일 트리플챌린지</h3></div></div>' +
       '<p style="margin:4px 2px 0;font-size:13px;line-height:1.6;color:#496158;font-weight:600">이오메가 리퀴드 · 레몬 · 포스티엠, 21일 동안 함께하는 트리플 루틴입니다. 닉네임과 시작일만 정하면 바로 시작할 수 있어요.</p>' +
       '<label class="field"><span>닉네임</span><input id="obNick" maxlength="20" value="' + esc(state.nickname) + '" placeholder="예: 정종범"></label>' +
-      '<label class="field"><span>챌린지 시작일</span><input id="obStart" type="date" value="' + esc(state.startDate) + '"></label>' +
+      '<label class="field"><span>챌린지 시작일</span><input id="obStart" type="date" value="' + esc(serverStartDate() || state.startDate) + '"></label>' +
+      (serverStartDate() ? '<p class="field-hint" style="margin-top:-6px">이번 기수 공식 시작일(' + esc(fmtKo(serverStartDate())) + ')로 맞춰져 있어요. 그대로 두면 함께 시작합니다.</p>' : '') +
       '<div class="sheet-actions"><button class="btn btn-primary" id="obStartBtn" style="margin-top:0">시작하기</button></div>' +
       '<p class="foot">나중에 설정에서 언제든 바꿀 수 있어요.<br>인증샷은 함께 인증샷 탭에서 회원들과 공유됩니다.</p>',
       function(card){
@@ -3105,6 +3427,16 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
     $('#btnRefresh').addEventListener('click', refreshApp);
     $('#btnName').addEventListener('click', openSettings);
     $('#btnEditStart').addEventListener('click', openSettings);
+
+    /* v3.6: 완주 배지 → 축하 화면 다시 보기 */
+    var winBtn = $('#heroWin');
+    if(winBtn) winBtn.addEventListener('click', function(){ maybeCelebrate(true); });
+    /* v3.6: 빠진 날 보충 목록 */
+    var mkCard = $('#makeupCard');
+    if(mkCard) mkCard.addEventListener('click', function(e){
+      var row = e.target.closest('[data-makeup]');
+      if(row) openDay(row.getAttribute('data-makeup'));
+    });
     $('#btnServerInfo').addEventListener('click', openServerInfo);
 
     $$('#routines .routine').forEach(function(btn){
@@ -3122,6 +3454,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
         setTimeout(function(){ btn.classList.remove('just-done'); }, 450);
         renderToday();
         if(complete(tk)) toast('오늘 트리플 루틴 완료! 🎉');
+        maybeCelebrate();   /* v3.6: 21일을 모두 채운 순간 팡파레 */
       });
     });
 
@@ -3473,6 +3806,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
   updateChatBar(currentTab);
   setTimeout(hideSplash, SPLASH_MS);
   if(!state.onboarded){ setTimeout(openOnboard, SPLASH_MS + 220); }
+  setTimeout(function(){ maybeCelebrate(); }, SPLASH_MS + 700);   /* v3.6: 이미 21일을 채운 상태로 다시 열었을 때 */
 
 })();
 </script>
