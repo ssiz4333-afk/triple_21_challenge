@@ -167,7 +167,8 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
 .chip-btn{display:inline-flex;align-items:center;gap:5px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--ink-2);padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer}
 .chip-btn:active{background:var(--mint-soft);border-color:#BEE7D6;color:var(--mint-dark)}
 .drop-preview{position:relative;width:100%;height:100%}
-.drop-preview img{display:block;width:100%;max-height:360px;object-fit:cover;background:#E9F2ED}
+/* v3.6: 어떤 비율의 사진이든 잘리지 않고 전체가 보이게 — 우측 하단 타임스탬프가 프레임 밖으로 나가지 않는다 */
+.drop-preview img{display:block;width:auto;max-width:100%;height:auto;max-height:360px;margin:0 auto;object-fit:contain;background:#E9F2ED}
 .drop-remove{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;border:none;background:rgba(15,35,28,.62);color:#fff;font-size:13px;font-weight:800;cursor:pointer;display:grid;place-items:center;backdrop-filter:blur(4px)}
 .drop-badge{position:absolute;left:8px;bottom:8px;background:var(--lemon);color:#4A3600;font-size:10.5px;font-weight:800;padding:4px 9px;border-radius:999px}
 
@@ -256,9 +257,10 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
 .badge-ex{font-size:9.5px;font-weight:800;color:#8A6B00;background:#FFF3C4;border:1px solid #FFE28A;padding:1.5px 6px;border-radius:999px}
 .post-sub{font-size:10.5px;color:var(--ink-3);font-weight:700;margin-top:2px}
 .post-day{font-size:10.5px;font-weight:800;color:var(--mint);background:var(--mint-soft);border-radius:999px;padding:4px 9px;flex:0 0 auto}
-.post-media{position:relative;border-radius:16px;overflow:hidden;aspect-ratio:4/3;background:#EDF5F1;cursor:pointer}
-.post-media img{width:100%;height:100%;object-fit:cover;display:block}
-.post-art{width:100%;height:100%;display:grid;place-items:center;font-size:62px;position:relative}
+/* v3.6: 피드도 사진 전체를 보여 타임스탬프가 잘리지 않게 (자리표시 그림만 4:3) */
+.post-media{position:relative;border-radius:16px;overflow:hidden;background:#E9F2ED;cursor:pointer;display:grid;place-items:center}
+.post-media img{display:block;width:100%;height:auto;max-height:min(72dvh,560px);object-fit:contain;background:#E9F2ED}
+.post-art{width:100%;aspect-ratio:4/3;display:grid;place-items:center;font-size:62px;position:relative}
 .post-art::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 70% 20%,rgba(255,255,255,.5),transparent 55%)}
 .post-art span{position:relative;z-index:1;filter:drop-shadow(0 6px 12px rgba(0,0,0,.12))}
 .post-memo{margin:11px 2px 2px;font-size:13px;line-height:1.55;color:var(--ink);font-weight:500;word-break:break-word}
@@ -2147,20 +2149,26 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
               textW:textW, textH:textH, bw:bw, bh:bh};
     }
 
-    var MAX_W = w * 0.80;   /* 가로 상한 — 피사체를 너무 가리지 않게 */
-    var MAX_H = h * 0.55;   /* 세로 상한 — 납작한 가로 사진 대비 */
+    /* v3.6: 모서리 여백(최소 6px)까지 계산해 배지가 사진 경계를 넘지 않도록 상한을 잡는다 */
+    var margin = Math.max(6, Math.round(w * 0.030));
+    var MAX_W = Math.min(w * 0.80, w - margin * 2);   /* 가로 상한 — 피사체를 너무 가리지 않게 */
+    var MAX_H = Math.min(h * 0.55, h - margin * 2);   /* 세로 상한 — 납작한 가로 사진 대비 */
     var L = layout(1);
     var k = 1;
     if(L.bw > MAX_W) k = Math.min(k, MAX_W / L.bw);
     if(L.bh > MAX_H) k = Math.min(k, MAX_H / L.bh);
     if(k < 1) L = layout(k);
+    /* 반올림·최소 글자 크기 때문에 한 번 더 넘칠 수 있어 재조정한다 */
+    if(L.bw > MAX_W || L.bh > MAX_H){
+      k = k * Math.min(MAX_W / L.bw, MAX_H / L.bh);
+      L = layout(Math.max(0.3, k));
+    }
 
     var bw = L.bw, bh = L.bh, f1 = L.f1, f2 = L.f2, gap = L.gap, padX = L.padX, icon = L.icon, iconGap = L.iconGap;
     var textH = L.textH;
-    var margin = Math.round(w * 0.030);
     var x = Math.round(w - margin - bw);
     var y = Math.round(h - margin - bh);
-    if(x < 2 || y < 2 || bw > w * 0.92 || bh > h * 0.72) return; /* 너무 작은 사진에서는 생략 */
+    if(x < 0 || y < 0 || bw > w || bh > h) return; /* 캔버스가 배지보다 작을 때만 생략 */
     var radius = Math.round(bh * 0.30);
 
     ctx.save();
@@ -3250,7 +3258,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       '<input type="file" id="setImportFile" accept="application/json,.json" hidden>' +
       '<p class="field-hint">※ 이미 올린 인증샷은 서버에 남아 함께 인증샷 탭에 계속 보입니다.</p>' +
       '<button class="btn btn-danger-ghost" id="setReset">모든 기록 초기화</button>' +
-      '<p class="foot">21일 트리플챌린지 · v3.6 (21일+3일 여유 기간 · 21일 완주 팡파레 · 새 기수 전체 리셋 연동 · 인증샷 타임스탬프 · 함께 인증샷 댓글 · 카카오 로그인 · 실시간 채팅)<br>기록은 카카오 로그인 시 계정에, 로그인 전에는 내 폰에 저장됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
+      '<p class="foot">21일 트리플챌린지 · v3.6 (인증샷 타임스탬프 프레임 안 보정 · 21일+3일 여유 기간 · 21일 완주 팡파레 · 새 기수 전체 리셋 연동 · 함께 인증샷 댓글 · 카카오 로그인 · 실시간 채팅)<br>기록은 카카오 로그인 시 계정에, 로그인 전에는 내 폰에 저장됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
       function(card){
         var kb = $('#setKakaoLogin', card);
         if(kb) kb.addEventListener('click', function(){
