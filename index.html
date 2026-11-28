@@ -483,42 +483,57 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
 .chat-send:disabled{opacity:.45;box-shadow:none}
 .chat-send svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 
-/* ---------- v2.5 · 오일·제품 ---------- */
-.prod-hero{position:relative;overflow:hidden;border-radius:24px;padding:18px 17px 17px;color:#fff;background:linear-gradient(150deg,#07664E,#0C8F6E 58%,#12B58B)}
+/* ---------- v3.8 · 오일·제품 ---------- */
+.prod-hero{position:relative;overflow:hidden;border-radius:24px;padding:19px 18px 18px;color:#fff;background:linear-gradient(150deg,#07664E,#0C8F6E 58%,#12B58B)}
 .prod-hero::after{content:"";position:absolute;right:-84px;top:-96px;width:214px;height:214px;border-radius:50%;background:rgba(255,255,255,.11)}
 .prod-hero>*{position:relative;z-index:1}
 .prod-tag{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:5px 11px;font-size:11px;font-weight:900;background:var(--lemon);color:#4A3600;box-shadow:0 3px 10px rgba(0,0,0,.12)}
-.prod-hero h2{margin:11px 0 0;font-size:19px;font-weight:900;letter-spacing:-.6px;line-height:1.32}
-.prod-hero>p{margin:8px 0 0;font-size:12px;font-weight:600;line-height:1.55;color:rgba(255,255,255,.9)}
-.prod-hero ul{margin:13px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
-.prod-hero li{display:flex;gap:7px;font-size:11.5px;font-weight:700;line-height:1.45;color:rgba(255,255,255,.95)}
-.prod-card{margin-top:13px;background:#fff;border:1px solid var(--line);border-radius:22px;padding:15px;box-shadow:var(--shadow)}
-.prod-card.hl{border-color:#FFDB62;box-shadow:0 10px 24px rgba(255,216,77,.24)}
-.prod-top{display:flex;align-items:center;gap:11px}
-.prod-ico{width:48px;height:48px;flex:0 0 auto;border-radius:15px;display:grid;place-items:center;overflow:hidden;background:#fff;box-shadow:0 3px 9px rgba(12,60,45,.13)}
-.prod-ico img{display:block;width:100%;height:100%;object-fit:contain}
-.prod-name{flex:1;min-width:0}
-.prod-name strong{display:block;font-size:15px;font-weight:900;letter-spacing:-.3px}
-.prod-name span{display:block;margin-top:1px;font-size:10.5px;font-weight:700;letter-spacing:.2px;color:var(--ink-3)}
-.prod-badge{flex:0 0 auto;font-size:9.5px;font-weight:900;border-radius:999px;padding:4px 8px;white-space:nowrap;color:#0A6048;background:#DFF5EA;border:1px solid #BCE9D4}
-.prod-badge.aroma{color:#5A4200;background:#FFF3C4;border-color:#FFE28A}
-.prod-desc{margin:11px 0 0;font-size:12.5px;font-weight:600;line-height:1.6;color:var(--ink-2)}
-.prod-feats{margin:11px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
-.prod-feats li{position:relative;padding-left:17px;font-size:12px;font-weight:600;line-height:1.55;color:var(--ink-2)}
-.prod-feats li::before{content:"✓";position:absolute;left:0;top:0;font-size:11.5px;font-weight:900;color:var(--mint)}
-.prod-feats b{color:var(--ink);font-weight:800}
-.prod-use{margin:12px 0 0;padding:11px 12px;border-radius:14px;background:#F7FBF9;border:1px solid var(--line);font-size:11.5px;font-weight:600;line-height:1.6;color:var(--ink-2)}
-.prod-use b{color:var(--mint-dark);font-weight:900}
-.prod-warn{margin:9px 2px 0;font-size:10.5px;font-weight:600;line-height:1.5;color:#96702A}
-.synergy{margin-top:14px;border-radius:22px;padding:16px;background:linear-gradient(150deg,#F1FBF6,#FFFDF0);border:1px solid #D5EDE2}
-.synergy h3{margin:0;font-size:14.5px;font-weight:900;letter-spacing:-.3px}
+.prod-hero h2{margin:12px 0 0;font-size:20px;font-weight:900;letter-spacing:-.7px;line-height:1.3}
+.prod-hero>p{margin:9px 0 0;font-size:12px;font-weight:600;line-height:1.55;color:rgba(255,255,255,.9)}
+.prod-ways{display:flex;flex-wrap:wrap;gap:6px;margin-top:13px}
+.prod-ways span{font-size:11px;font-weight:800;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.24)}
+
+.pcard{margin-top:14px;background:#fff;border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);overflow:hidden}
+.pcard.hl{border-color:#FFE08A;box-shadow:0 12px 26px rgba(255,216,77,.20)}
+.pcard-photo{aspect-ratio:1.4;background:#fff;border-bottom:1px solid var(--line);padding:16px 18px;display:grid;place-items:center}
+.pcard-photo img{width:100%;height:100%;object-fit:contain;display:block}
+.pcard-body{padding:16px 17px 17px}
+.pcard-id{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.pcard-name{margin:0;font-size:18px;font-weight:900;letter-spacing:-.55px;line-height:1.25}
+.pcard-latin{display:block;margin-top:3px;font-size:10.5px;font-weight:700;letter-spacing:.2px;color:var(--ink-3)}
+.pcard-badge{flex:0 0 auto;font-size:9.5px;font-weight:900;border-radius:999px;padding:4px 9px;white-space:nowrap;color:#0A6048;background:#DFF5EA;border:1px solid #BCE9D4}
+.pcard-badge.aroma{color:#5A4200;background:#FFF3C4;border-color:#FFE28A}
+.pcard-sum{margin:11px 0 0;font-size:13.5px;font-weight:800;line-height:1.5;letter-spacing:-.2px;color:var(--ink)}
+.pcard-sum em{font-style:normal;color:var(--mint-dark)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}
+.chip{font-size:11px;font-weight:800;padding:5px 10px;border-radius:999px;background:var(--mint-soft);color:var(--mint-dark);border:1px solid #D3EFE3}
+.chip.warm{background:var(--lemon-soft);color:#7A5B00;border-color:#FFE9A3}
+.pcard-use{display:flex;gap:7px;margin-top:12px;font-size:11.5px;font-weight:600;line-height:1.55;color:var(--ink-2)}
+.pcard-use b{flex:0 0 auto;color:var(--mint-dark);font-weight:900}
+.pcard-warn{margin:10px 0 0;font-size:10.5px;font-weight:600;line-height:1.5;color:var(--ink-3)}
+.synergy{margin-top:14px;border-radius:24px;padding:17px;background:linear-gradient(150deg,#F1FBF6,#FFFDF0);border:1px solid #D5EDE2}
+.synergy h3{margin:0;font-size:15px;font-weight:900;letter-spacing:-.4px}
 .synergy p{margin:6px 0 0;font-size:11.5px;font-weight:600;line-height:1.55;color:var(--ink-2)}
-.synergy ol{margin:11px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px;counter-reset:syn}
+.synergy ol{margin:12px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px;counter-reset:syn}
 .synergy li{counter-increment:syn;display:flex;gap:9px;font-size:12px;font-weight:600;line-height:1.55;color:var(--ink-2)}
 .synergy li::before{content:counter(syn);flex:0 0 auto;width:21px;height:21px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:900;background:var(--mint-soft);color:var(--mint-dark)}
 .synergy b{color:var(--ink);font-weight:800}
+
+/* v3.8 · 도테라 모닝 리프레쉬 키트 연결 배너 */
+.kit-banner{display:block;margin-top:16px;border-radius:24px;overflow:hidden;background:linear-gradient(155deg,#0A5B46,#0C8F6E 62%,#14A87E);box-shadow:0 16px 30px rgba(7,102,78,.24);text-decoration:none;color:#fff;position:relative;transition:transform .15s}
+.kit-banner:active{transform:scale(.985)}
+.kit-banner::after{content:"";position:absolute;right:-70px;bottom:-90px;width:190px;height:190px;border-radius:50%;background:rgba(255,255,255,.10)}
+.kit-photo{position:relative;background:#fff;padding:12px 16px;aspect-ratio:1.35;display:grid;place-items:center;overflow:hidden}
+.kit-photo img{width:100%;height:100%;object-fit:contain;display:block}
+.kit-body{position:relative;z-index:1;padding:15px 17px 17px}
+.kit-eyebrow{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:900;letter-spacing:.2px;border-radius:999px;padding:4px 10px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28)}
+.kit-title{display:block;margin:9px 0 0;font-size:18px;font-weight:900;letter-spacing:-.5px}
+.kit-desc{margin:6px 0 0;font-size:11.5px;font-weight:600;line-height:1.55;color:rgba(255,255,255,.9)}
+.kit-cta{display:inline-flex;align-items:center;gap:6px;margin-top:13px;font-size:12px;font-weight:900;color:#0A5B46;background:var(--lemon);border-radius:999px;padding:9px 14px;box-shadow:0 6px 14px rgba(0,0,0,.16)}
+.kit-cta svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 .prod-foot{margin:14px 2px 0;font-size:10.5px;font-weight:600;line-height:1.6;color:var(--ink-3);text-align:center}
-.chat-intro p,.msg-bubble,.prod-hero>p,.prod-desc,.prod-feats li,.prod-use,.synergy p,.synergy li{word-break:keep-all;overflow-wrap:anywhere}
+.chat-intro p,.msg-bubble,.prod-hero>p,.pcard-sum,.pcard-use,.pcard-warn,.synergy p,.synergy li,.kit-desc{word-break:keep-all;overflow-wrap:anywhere}
+
 </style>
 </head>
 <body>
@@ -725,75 +740,120 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       <div class="chat-list" id="chatList"></div>
     </section>
 
-    <!-- ===== 오일·제품 ===== -->
+    <!-- ===== 오일·제품 (v3.8) ===== -->
     <section class="view" id="view-products">
       <div class="prod-hero">
         <span class="prod-tag">🌿 CPTG® 아로마오일</span>
-        <h2>왜 도테라<br>CPTG® 아로마오일인가?</h2>
-        <p>향기만 흉내 내는 오일이 아니라, 식물이 만든 향기 성분을 그대로 담아 품질을 검증한 에센셜 오일입니다.</p>
-        <ul>
-          <li><span aria-hidden="true">🌱</span><span><b>100% 순수 천연</b> 에센셜 오일 — 합성 첨가물·희석제를 넣지 않습니다.</span></li>
-          <li><span aria-hidden="true">🔬</span><span><b>CPTG 품질 테스트</b> — 순도·조성·오염물질까지 도테라 기준으로 확인합니다.</span></li>
-          <li><span aria-hidden="true">🍋</span><span>레몬은 <b>식품첨가물(착향)</b>로 등록되어 물·차에 1~2방울 음용할 수 있는 고순도 오일입니다.</span></li>
-          <li><span aria-hidden="true">💧</span><span><b>향기 · 도포 · 섭취</b> 세 가지 방식으로 매일의 루틴에 자연스럽게.</span></li>
-        </ul>
+        <h2>매일 한 방울,<br>루틴이 되는 오일</h2>
+        <p>100% 순수 천연 에센셜 오일. 향기 · 도포 · 섭취, 쓰임에 맞게 골라 씁니다.</p>
+        <div class="prod-ways"><span>💧 향기</span><span>🤲 도포</span><span>🥄 섭취</span></div>
       </div>
 
-      <div class="prod-card hl">
-        <div class="prod-top">
-          <div class="prod-ico" data-icon="l" style="background:#FFF8D6"></div>
-          <div class="prod-name"><strong>레몬 에센셜 오일</strong><span>Lemon · Citrus limon · 15 mL</span></div>
-          <span class="prod-badge aroma">아로마 하이라이트</span>
+      <article class="pcard hl">
+        <div class="pcard-photo">
+          <img src="assets/p-lemon.webp" alt="도테라 레몬 에센셜 오일 15mL" width="336" height="1100" decoding="async">
         </div>
-        <p class="prod-desc">이탈리아 시칠리아와 브라질에서 수확한 레몬 껍질을 <b>냉압착(콜드프레스)</b>으로 추출한 100% 레몬 오일입니다. 상큼한 향의 주성분은 <b>리모넨</b>, β-피넨, γ-테르피넨. 15mL 한 병에 레몬 약 75개가 들어갑니다.</p>
-        <ul class="prod-feats">
-          <li><b>아침 물 한 잔</b> — 물 500mL에 1~2방울. 공식 사용법도 음료·차에 1~2방울입니다.</li>
-          <li><b>기분 리프레시</b> — 디퓨저에 3~4방울, 또는 손바닥에 1방울 떨어뜨려 향을 맡으면 상쾌하게 집중을 돕습니다.</li>
-          <li><b>주방·생활 다용도</b> — 물에 몇 방울 섞어 스프레이로 조리대·싱크대를 닦거나, 베이킹·샐러드·육류 요리에 소량 첨가해 풍미를 더합니다.</li>
-        </ul>
-        <div class="prod-use"><b>보관</b> 직사광선을 피해 서늘한 곳에. <b>주의</b> 피부 자극이 있을 수 있어 눈·귀 주변은 피하고, 피부에 닿았다면 12시간 자외선을 피해 주세요.</div>
-      </div>
+        <div class="pcard-body">
+          <div class="pcard-id">
+            <div>
+              <h3 class="pcard-name">레몬</h3>
+              <span class="pcard-latin">Lemon · Citrus limon · 15 mL</span>
+            </div>
+            <span class="pcard-badge aroma">아침 물 한 잔</span>
+          </div>
+          <p class="pcard-sum">상큼함으로 아침을 여는 오일.<br>물과 차에 <em>1~2방울</em>이면 충분합니다.</p>
+          <div class="chips">
+            <span class="chip warm">아침 물</span><span class="chip warm">주방 세정</span><span class="chip warm">상큼한 향</span>
+          </div>
+          <div class="pcard-use"><b>쓰는 법</b><span>물 500mL에 1~2방울 · 디퓨저 3~4방울 · 베이킹에 소량</span></div>
+          <p class="pcard-warn">피부에 닿았다면 12시간은 자외선을 피해 주세요.</p>
+        </div>
+      </article>
 
-      <div class="prod-card">
-        <div class="prod-top">
-          <div class="prod-ico" data-icon="x" style="background:#E8F4FF"></div>
-          <div class="prod-name"><strong>이오 메가 리퀴드</strong><span>EO Mega+™ · 250 mL · 건강기능식품</span></div>
-          <span class="prod-badge">아로마 시너지</span>
+      <article class="pcard">
+        <div class="pcard-photo">
+          <img src="assets/p-peppermint.webp" alt="도테라 페퍼민트 쿨링 에센셜 오일 15mL" width="395" height="1100" decoding="async">
         </div>
-        <p class="prod-desc">청정 노르웨이산 EPA·DHA 함유 유지에 <b>도테라 레몬 에센셜 오일</b>과 그리스 Co-Impact Sourcing™ 엑스트라버진 올리브 오일을 더한 액상 오메가입니다. 1일 1,000mg(EPA+DHA 합) 고함량.</p>
-        <ul class="prod-feats">
-          <li><b>4중 기능성</b> — 혈중 중성지질 개선·혈행 개선·기억력 개선·건조한 눈 개선에 도움을 줄 수 있음(EPA 및 DHA 함유 유지).</li>
-          <li><b>비린내 없는 상큼한 레몬맛</b> — 에센셜 오일 블렌드 덕분에 캡슐이 부담스러운 분도 액상으로 편하게.</li>
-          <li><b>빠른 흡수</b> — 정제를 삼키기 어려운 분, 육류 위주 식습관으로 지방 섭취가 많은 분께 권장됩니다.</li>
-        </ul>
-        <div class="prod-use"><b>섭취</b> 1일 1회 10mL를 스푼에 덜어 그대로, 또는 샐러드·빵에. 개봉 후 냉장 보관, 냉동·가열은 금지. 항응고제·혈압강하제 복용 중이면 전문가와 상담하세요.</div>
-      </div>
+        <div class="pcard-body">
+          <div class="pcard-id">
+            <div>
+              <h3 class="pcard-name">페퍼민트 쿨링</h3>
+              <span class="pcard-latin">Peppermint Cool · 15 mL</span>
+            </div>
+            <span class="pcard-badge">상쾌 · 집중</span>
+          </div>
+          <p class="pcard-sum">숨은 깊게, 머리는 맑게.<br>톡 쏘는 멘톨 향으로 <em>기분 전환</em>.</p>
+          <div class="chips">
+            <span class="chip">상쾌한 호흡</span><span class="chip">집중 리프레시</span><span class="chip">식후 상쾌함</span>
+          </div>
+          <div class="pcard-use"><b>쓰는 법</b><span>손바닥에 1방울 향 맡기 · 디퓨저 2~3방울 · 무거운 식사 뒤 손수건에 1방울</span></div>
+          <p class="pcard-warn">국내에서는 방향제(향료)로 등록된 제품입니다(CB22-12-0257). 눈·민감한 부위는 피해 주세요.</p>
+        </div>
+      </article>
 
-      <div class="prod-card">
-        <div class="prod-top">
-          <div class="prod-ico" data-icon="p" style="background:#E6F6EF"></div>
-          <div class="prod-name"><strong>포스티엠</strong><span>PHOSTM Cassis · 550 mL · 음료 베이스</span></div>
-          <span class="prod-badge">데일리 수분</span>
+      <article class="pcard">
+        <div class="pcard-photo">
+          <img src="assets/p-eomega.webp" alt="도테라 이오 메가 리퀴드 250mL" width="232" height="1100" decoding="async">
         </div>
-        <p class="prod-desc">진한 블랙커런트의 달콤함을 그대로 담은 <b>미네랄 음료 베이스</b>입니다. 미네랄 컴플렉스(마그네슘·칼슘·요오드·망간·철·아연)에 블랙커런트·아로니아·레몬 주스, 꿀, 비타민C, L-카르니틴을 담았습니다.</p>
-        <ul class="prod-feats">
-          <li><b>10배 희석</b> — 15~30mL를 물·에이드·요거트에 넣어 상큼한 데일리 음료로.</li>
-          <li><b>하루 수분 루틴</b> — 물 마시는 습관이 어려운 분, 나른한 오후 리프레시가 필요한 분께.</li>
-          <li><b>간편한 액체 타입</b> — 미네랄 성분으로 침전물이 생길 수 있어 첨가 전 잘 흔들어 사용하세요.</li>
-        </ul>
-        <div class="prod-use"><b>보관</b> 개봉 후 반드시 냉장 보관하고 빠르게 소비(소비기한 15개월). 병에 입을 대고 마시지 마세요.</div>
-      </div>
+        <div class="pcard-body">
+          <div class="pcard-id">
+            <div>
+              <h3 class="pcard-name">이오 메가 리퀴드</h3>
+              <span class="pcard-latin">EO Mega+™ · 250 mL · 건강기능식품</span>
+            </div>
+            <span class="pcard-badge">4중 기능성</span>
+          </div>
+          <p class="pcard-sum">비린내 없이 하루 한 스푼.<br>레몬맛 <em>액상 오메가 3</em>.</p>
+          <div class="chips">
+            <span class="chip">EPA·DHA 1,000mg</span><span class="chip">혈행·중성지질</span><span class="chip">상큼한 레몬맛</span>
+          </div>
+          <div class="pcard-use"><b>섭취</b><span>1일 1회 10mL — 그대로, 또는 샐러드·빵에. 개봉 후 냉장 보관.</span></div>
+          <p class="pcard-warn">항응고제·혈압강하제 복용 중이면 전문가와 상담하세요.</p>
+        </div>
+      </article>
+
+      <article class="pcard">
+        <div class="pcard-photo">
+          <img src="assets/p-postime.webp" alt="도테라 포스티엠 카시스 550mL" width="353" height="1100" decoding="async">
+        </div>
+        <div class="pcard-body">
+          <div class="pcard-id">
+            <div>
+              <h3 class="pcard-name">포스티엠 카시스</h3>
+              <span class="pcard-latin">PHOSTM Cassis · 550 mL</span>
+            </div>
+            <span class="pcard-badge">데일리 수분</span>
+          </div>
+          <p class="pcard-sum">블랙커런트 한 스푼,<br>물에 10배 희석해 <em>상큼한 오후</em>.</p>
+          <div class="chips">
+            <span class="chip">미네랄 컴플렉스</span><span class="chip">수분 루틴</span><span class="chip">블랙커런트</span>
+          </div>
+          <div class="pcard-use"><b>마시기</b><span>15~30mL를 물·에이드에 10배 희석 — 붓기 전에 잘 흔들어요.</span></div>
+          <p class="pcard-warn">개봉 후 냉장 보관, 병에 입을 대지 마세요. 소비기한 15개월.</p>
+        </div>
+      </article>
 
       <div class="synergy">
-        <h3>21일 트리플 시너지 루틴</h3>
+        <h3>21일 트리플 루틴, 이렇게</h3>
         <p>세 제품을 따로 먹기보다 <b>하루의 순서</b>로 묶으면 21일이 훨씬 가벼워집니다.</p>
         <ol>
-          <li><span><b>아침 — 수분·미네랄로 시작</b><br>포스티엠 15~30mL를 물에 10배 희석해 한 잔.</span></li>
-          <li><span><b>식후 — 오메가로 채우기</b><br>이오 메가 리퀴드 10mL를 스푼으로 한 번.</span></li>
-          <li><span><b>하루 틈틈이 — 향과 물로 순환</b><br>레몬 1~2방울을 물 500mL에, 또는 디퓨저로 공간을 상쾌하게.</span></li>
+          <li><span><b>아침</b> — 포스티엠 15~30mL를 물에 10배 희석해 한 잔.</span></li>
+          <li><span><b>식후</b> — 이오 메가 리퀴드 10mL를 스푼으로 한 번.</span></li>
+          <li><span><b>틈틈이</b> — 물 500mL에 레몬 1~2방울, 페퍼민트는 향으로 1방울.</span></li>
         </ol>
-        <div class="prod-use" style="margin-top:12px;background:#fff"><b>섭취 팁</b> 물은 하루 1.5~2L, 오일은 직사광선을 피해 서늘한 곳에. 21일 동안 <b>같은 시간</b>에 체크하는 습관이 완주의 핵심입니다.</div>
       </div>
+
+      <a class="kit-banner" href="https://www.doterra.com/KR/ko_KR/p/morning-refresh-kit" target="_blank" rel="noopener noreferrer" aria-label="도테라 모닝 리프레쉬 키트 공식 상품 페이지 열기 (새 창)">
+        <div class="kit-photo">
+          <img src="assets/kit-morning-refresh.webp" alt="도테라 모닝 리프레쉬 키트 구성 — 이오 메가 리퀴드, 포스티엠 카시스, 페퍼민트 15mL, 레몬 15mL" width="1300" height="1473" loading="lazy" decoding="async">
+        </div>
+        <div class="kit-body">
+          <span class="kit-eyebrow">🛒 도테라 공식 페이지</span>
+          <strong class="kit-title">모닝 리프레쉬 키트</strong>
+          <p class="kit-desc">이오 메가 리퀴드 · 포스티엠 카시스 · 레몬 15mL · 페퍼민트 15mL — 상쾌한 아침을 시작하는 4종 구성.</p>
+          <span class="kit-cta">공식 상품 페이지에서 보기<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>
+        </div>
+      </a>
 
       <a class="maker" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">
         <span class="maker-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.4l2.6 5.2 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8L12 3.4Z"/></svg></span>
@@ -3300,7 +3360,7 @@ main{flex:1;padding:16px 16px calc(100px + env(safe-area-inset-bottom))}
       '<input type="file" id="setImportFile" accept="application/json,.json" hidden>' +
       '<p class="field-hint">※ 이미 올린 인증샷은 서버에 남아 함께 인증샷 탭에 계속 보입니다.</p>' +
       '<button class="btn btn-danger-ghost" id="setReset">모든 기록 초기화</button>' +
-      '<p class="foot">21일 트리플챌린지 · v3.7 (앱 초대 링크 공유 · 인증샷 타임스탬프 프레임 안 보정 · 21일+3일 여유 기간 · 21일 완주 팡파레 · 새 기수 전체 리셋 연동 · 함께 인증샷 댓글 · 카카오 로그인 · 실시간 채팅)<br>기록은 카카오 로그인 시 계정에, 로그인 전에는 내 폰에 저장됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
+      '<p class="foot">21일 트리플챌린지 · v3.8 (오일·제품 탭 리뉴얼 — 큰 제품 사진·짧은 효능, 페퍼민트 추가, 모닝 리프레쉬 키트 배너 · 앱 초대 링크 공유 · 인증샷 타임스탬프 프레임 안 보정 · 21일+3일 여유 기간 · 21일 완주 팡파레 · 새 기수 전체 리셋 연동 · 함께 인증샷 댓글 · 카카오 로그인 · 실시간 채팅)<br>기록은 카카오 로그인 시 계정에, 로그인 전에는 내 폰에 저장됩니다.<br>제작자 <a class="foot-link" href="https://www.instagram.com/erang_coach/" target="_blank" rel="noopener noreferrer" aria-label="제작자 @erang_coach 인스타그램 열기 (새 창)">@erang_coach</a></p>',
       function(card){
         var kb = $('#setKakaoLogin', card);
         if(kb) kb.addEventListener('click', function(){

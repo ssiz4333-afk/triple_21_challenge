@@ -3,7 +3,7 @@
    - 네트워크 우선: 항상 최신 앱을 먼저 받아오고, 끊겼을 때만 캐시로 대체
    - 관리자 페이지(admin.html)는 캐시하지 않습니다.
 */
-const CACHE = 'triple21-v3.7.0';
+const CACHE = 'triple21-v3.8.0';
 const ASSETS = [
   './',
   './index.html',
@@ -12,7 +12,12 @@ const ASSETS = [
   './icon-192.png',
   './icon-512.png',
   './apple-touch-icon.png',
-  './favicon-32.png'
+  './favicon-32.png',
+  './assets/p-lemon.webp',
+  './assets/p-peppermint.webp',
+  './assets/p-eomega.webp',
+  './assets/p-postime.webp',
+  './assets/kit-morning-refresh.webp'
 ];
 
 self.addEventListener('install', event => {
